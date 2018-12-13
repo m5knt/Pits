@@ -1,7 +1,7 @@
 ﻿/**
+ * @brief 逆行しないクロックによるタイマー
  * @file 
- * @author yukio kaneda
- * @brief 逆行しないタイマー
+ * @author Yukio KANEDA
  */
 
 #include "Timer.hpp"
@@ -42,7 +42,7 @@ auto Timer::GetElapsed() const noexcept -> SecondType
 }
 
 // 経過時間[sec]を返すとともにタイマーをリセットする
-auto Timer::GetElapsedAndRestart() noexcept -> SecondType
+auto Timer::GetElapsedAndReset() noexcept -> SecondType
 {
     using namespace std::chrono;
     auto beg = begin_;
@@ -52,7 +52,7 @@ auto Timer::GetElapsedAndRestart() noexcept -> SecondType
 }
 
 // 整数経過時間[sec]を返すとともにタイマーをリセットする
-auto Timer::GetIntegerElapsedAndRestart() noexcept -> IntegerSecondType
+auto Timer::GetIntegerElapsedAndReset() noexcept -> IntegerSecondType
 {
     using namespace std::chrono;
     auto beg = begin_;
@@ -66,7 +66,7 @@ auto Timer::GetIntegerElapsedAndRestart() noexcept -> IntegerSecondType
 }
 
 // タイマーをリセットする
-void Timer::Restart() noexcept
+void Timer::Reset() noexcept
 {
     new(this) Timer();
 }
