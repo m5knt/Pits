@@ -9,7 +9,7 @@ exit /b
 if "%1" == "clean" goto :CLEAN
 if "%1" == "build" goto :BUILD
 if "%1" == "ide" goto :IDE
-if "%1" == "admin" goto :ADMIN
+if "%1" == "idesu" goto :IDESU
 if "%1" == "" goto :BUILD
 echo.Illigal Command "%1"
 exit /b 1
@@ -28,7 +28,6 @@ exit /b
 start /b build/Pits.sln
 exit /b
 
-:ADMIN
-::start build/Pits.sln
+:IDESU
 powershell start-process cmd -ArgumentList '/c start /b %CD%/build/Pits.sln""' -verb runas
 exit /b
