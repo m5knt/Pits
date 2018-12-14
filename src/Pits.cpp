@@ -1,7 +1,7 @@
 ﻿/**
- * @file 
- * @author yukio kaneda
  * @brief 最低最悪土壺状態から壺を心得る事を目標としながら偏狭な陶芸家の様に壺を割るライブラリ "The PITS"
+ * @author yukio kaneda
+ * @file 
  */
 
 #include "Pits.hpp"

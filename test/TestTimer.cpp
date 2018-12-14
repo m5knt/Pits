@@ -43,7 +43,7 @@ int main() {
 	t = Pits::ToSeconds<double>(std::chrono::milliseconds(1500));
 	assert(t == 1.5f);
 	i = Pits::ToSeconds<std::int64_t>(std::chrono::milliseconds(1500));
-	assert(t == 1);
+	assert(i == 1);
 
     return EXIT_SUCCESS;
 }

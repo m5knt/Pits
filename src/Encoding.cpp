@@ -1,8 +1,8 @@
 ﻿
 /**
- * @file 
- * @author yukio kaneda
  * @brief 文字列エンコーディング関係
+ * @author Yuki Kaneda
+ * @file 
  */
 
 #include "Encoding.hpp"

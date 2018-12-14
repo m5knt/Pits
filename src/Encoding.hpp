@@ -1,7 +1,7 @@
 ﻿/**
- * @file 
- * @author yukio kaneda
  * @brief 最小限の文字列エンコーディングユーティリティー関係
+ * @author Yukio KANEDA
+ * @file 
  */
 
 #ifndef PITS_ENCODING_HPP_
@@ -98,6 +98,7 @@ constexpr char32_t UTF32Kan[] = { 0x00006f22, 0 };
  * @brief ワイド文字列のエンコード種別を返す
  * @param kan 文字列 L"漢" を渡す
  * @return EncodingType 
+ * @note Windows UTF16 Linux/OSX UTF-32 が一般的である
  */
 constexpr auto GetEncodingType(const wchar_t* kan) -> EncodingType
 {
@@ -122,7 +123,7 @@ constexpr auto GetEncodingType(const wchar_t* kan) -> EncodingType
  * @param kan 文字列 L"漢" を渡す
  * @return 真偽
  * 
- * static_assert(IsUTF16Encoding(L"漢"));
+ * @note static_assert(IsUTF16Encoding(L"漢"));
  */
 constexpr auto IsUTF16Encoding(const wchar_t* kan) -> bool
 {
@@ -131,10 +132,11 @@ constexpr auto IsUTF16Encoding(const wchar_t* kan) -> bool
 
 /**
  * @brief ワイド文字列がUTF32エンコードであるか返す
+ * 
  * @param kan 文字列 L"漢" を渡す
  * @return 真偽
  * 
- * static_assert(IsUTF32Encoding(L"漢"));
+ * @note static_assert(IsUTF32Encoding(L"漢"));
  */
 constexpr auto IsUTF32Encoding(const wchar_t* kan) -> bool
 {

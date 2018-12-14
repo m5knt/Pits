@@ -1,7 +1,7 @@
 ﻿/**
  * @brief 逆行しないクロックによるタイマー
- * @file 
  * @author Yukio KANEDA
+ * @file 
  */
 
 #include "Timer.hpp"
