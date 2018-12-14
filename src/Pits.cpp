@@ -60,15 +60,6 @@ auto Pits::GetWideCharEncoding() const noexcept -> EncodingType
  *
  */
 
-auto Pits::IsMainThread() const noexcept -> bool
-{
-    return std::this_thread::get_id() == main_thread_id_;
-}
-
-/*
- *
- */
-
 auto Pits::Update() -> void
 {
     revisit_max_ = std::max(revisit_max_, revisit_timer_.GetElapsedAndReset());

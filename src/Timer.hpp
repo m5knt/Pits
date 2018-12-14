@@ -8,7 +8,7 @@
 #define PITS_TIMER_HPP_
 
 #include <chrono>       // chrono, ratio
-#include <cstdint>      // int64_t
+#include <cstdint>      // intXX_t, uintXX_t
 #include <type_traits>  // conditional_t
 
 /*
@@ -48,6 +48,9 @@ public:
         std::chrono::steady_clock
         >;
 
+    /// 時刻の型
+    using TimePointType = ClockType::time_point;
+
     /// 秒表現に使う型 (doubleは仮数部52ビット)
     using SecondsType = double;
 
@@ -68,7 +71,7 @@ public:
     Timer() noexcept;
 
     /// 指定の時刻からタイマーを開始する
-    Timer(ClockType::time_point tp) noexcept;
+    Timer(TimePointType tp) noexcept;
 
     /// 経過時間[sec]を返す
     auto GetElapsed() const noexcept -> SecondsType;
@@ -82,10 +85,16 @@ public:
     /// タイマーをリセットする
     void Reset() noexcept;
 
+    /// 現在時刻を返す
+    static auto Now() noexcept -> TimePointType
+    {
+        return ClockType::now();
+    }
+
 private:
 
     /// 計測開始時刻
-    ClockType::time_point begin_;
+    TimePointType begin_;
 };
 
 /*

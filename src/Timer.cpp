@@ -5,7 +5,7 @@
  */
 
 #include "Timer.hpp"
-#include <new>          // placement new
+#include <new>          // new(place)
 
 /*
  *
@@ -22,12 +22,12 @@ Timer::~Timer() noexcept
 
 // タイマーを開始する
 Timer::Timer() noexcept
-: begin_ {ClockType::now()}
+: begin_ {Now()}
 {
 }
 
 // 指定時刻からタイマーを開始する
-Timer::Timer(ClockType::time_point tp) noexcept
+Timer::Timer(TimePointType tp) noexcept
 : begin_ {tp}
 {
 }
@@ -37,7 +37,7 @@ auto Timer::GetElapsed() const noexcept -> SecondsType
 {
     using namespace std::chrono;
     auto beg = begin_;
-    auto now = ClockType::now();
+    auto now = Now();
     return ToSeconds<SecondsType>(now - beg);
 }
 
@@ -46,8 +46,8 @@ auto Timer::GetElapsedAndReset() noexcept -> SecondsType
 {
     using namespace std::chrono;
     auto beg = begin_;
-    auto now = ClockType::now();
-    new(this) Timer(now);
+    auto now = Now();
+    new(this) Timer(now); // time_point にコピーが無いので new(place) で代用
     return ToSeconds<SecondsType>(now - beg);
 }
 
@@ -56,10 +56,10 @@ auto Timer::GetIntegerElapsedAndReset() noexcept -> IntegerSecondsType
 {
     using namespace std::chrono;
     auto beg = begin_;
-    auto now = ClockType::now();
+    auto now = Now();
     auto elp = now - beg;
     if (auto sec = elp / seconds(1)) {
-        new(this) Timer(beg + seconds(sec));
+        new(this) Timer(beg + seconds(sec)); // time_point にコピーが無いので new(place) で代用
         return sec;
     }
     return 0;
@@ -68,7 +68,7 @@ auto Timer::GetIntegerElapsedAndReset() noexcept -> IntegerSecondsType
 // タイマーをリセットする
 void Timer::Reset() noexcept
 {
-    new(this) Timer();
+    new(this) Timer(); // time_point にコピーが無いので new(place) で代用
 }
 
 /*
@@ -80,3 +80,5 @@ void Timer::Reset() noexcept
 /*
  *
  */
+
+// TODO : GetThreadTimes FILETIME による user kern 時間計測

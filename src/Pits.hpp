@@ -14,11 +14,8 @@
 #include "Encoding.hpp"
 #include "Timer.hpp"
 
-// #include <iosfwd> // ostream, wostream
 #include <chrono>
-#include <mutex>
 #include <thread>
-// #include <cstddef> // size_t nullptr_t byte
 
 /**
  * @brief 最低最悪土壺状態から壺を心得る事を目標としながら偏狭な陶芸家の様に壺を割るライブラリ "The Pits"
@@ -63,7 +60,10 @@ private:
 public:
 
     /// 現在のスレッドがメインスレッドで有るか返す (スレッドセーフ)
-    auto IsMainThread() const noexcept -> bool;
+    auto IsMainThread() const noexcept -> bool
+    {
+        return std::this_thread::get_id() == main_thread_id_;
+    }
 
     /*
      *
@@ -95,11 +95,6 @@ public:
 
     // /// 起動時のシステム時刻 (逆行)
     // std::chrono::system_clock::time_point BeginSystemClock;
-
-    /*
-     *
-     */
-
 };
 
 /*
@@ -108,6 +103,13 @@ public:
 
 /// 各種動作状況の纏め
 extern class Pits Pits;
+
+/// 現在のスレッドがメインスレッドで有るか返す (スレッドセーフ)
+inline
+auto IsMainThread() noexcept -> bool
+{
+    return Pits.IsMainThread();
+}
 
 /*
  *
