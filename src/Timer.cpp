@@ -33,26 +33,26 @@ Timer::Timer(ClockType::time_point tp) noexcept
 }
 
 // 経過時間[sec]を返す
-auto Timer::GetElapsed() const noexcept -> SecondType
+auto Timer::GetElapsed() const noexcept -> SecondsType
 {
     using namespace std::chrono;
     auto beg = begin_;
     auto now = ClockType::now();
-    return ToSecond(now - beg);
+    return ToSeconds<SecondsType>(now - beg);
 }
 
 // 経過時間[sec]を返すとともにタイマーをリセットする
-auto Timer::GetElapsedAndReset() noexcept -> SecondType
+auto Timer::GetElapsedAndReset() noexcept -> SecondsType
 {
     using namespace std::chrono;
     auto beg = begin_;
     auto now = ClockType::now();
     new(this) Timer(now);
-    return ToSecond(now - beg);
+    return ToSeconds<SecondsType>(now - beg);
 }
 
 // 整数経過時間[sec]を返すとともにタイマーをリセットする
-auto Timer::GetIntegerElapsedAndReset() noexcept -> IntegerSecondType
+auto Timer::GetIntegerElapsedAndReset() noexcept -> IntegerSecondsType
 {
     using namespace std::chrono;
     auto beg = begin_;

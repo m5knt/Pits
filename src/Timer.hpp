@@ -22,12 +22,12 @@ namespace Pits {
  * @param d 時間 duration 型である事
  * @return 秒
  */
-template <class Rep, class Period, class SecondType = double>
+template <class SecondsType, class Duration>
 inline
-auto ToSecond(std::chrono::duration<Rep, Period> d) -> SecondType
+auto ToSeconds(const Duration& d) -> SecondsType
 {
-    return std::chrono::duration_cast<SecondType, std::ratio<1>>(d).count();
-    //return SecondType(d.count()) * Period::num / Period::den;
+	using namespace std::chrono;
+    return duration_cast<duration<SecondsType, std::ratio<1>>>(d).count();
 }
 
 /**
@@ -49,13 +49,13 @@ public:
         >;
 
     /// 秒表現に使う型 (doubleは仮数部52ビット)
-    using SecondType = double;
+    using SecondsType = double;
 
     /// 整数秒表現に使う型
-    using IntegerSecondType = std::int64_t;
+    using IntegerSecondsType = std::int64_t;
 
     /// 分解能は少なくとも 10[usec] を要求
-    static_assert(ClockType::period::den >= 0'100'000);
+    static_assert(ClockType::period::num == 1 && ClockType::period::den >= 0'100'000);
 
     Timer(const Timer&) = default;
     Timer& operator=(const Timer&) = default;
@@ -71,13 +71,13 @@ public:
     Timer(ClockType::time_point tp) noexcept;
 
     /// 経過時間[sec]を返す
-    auto GetElapsed() const noexcept -> SecondType;
+    auto GetElapsed() const noexcept -> SecondsType;
 
     /// 経過時間[sec]を返すとともにタイマーをリセットする
-    auto GetElapsedAndReset() noexcept -> SecondType;
+    auto GetElapsedAndReset() noexcept -> SecondsType;
 
     /// 整数経過時間[sec]を返すとともにタイマーをリセットする
-    auto GetIntegerElapsedAndReset() noexcept -> IntegerSecondType;
+    auto GetIntegerElapsedAndReset() noexcept -> IntegerSecondsType;
 
     /// タイマーをリセットする
     void Reset() noexcept;
