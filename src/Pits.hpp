@@ -52,7 +52,7 @@ public:
      *
      */
 
-    /// 定期集計処理
+    /// 定期集計処理 (メインスレッド)
     auto Update() -> void;
 
 private:
@@ -62,7 +62,7 @@ private:
 
 public:
 
-    /// 現在のスレッドがメインスレッドで有るか返す スレッドセーフ
+    /// 現在のスレッドがメインスレッドで有るか返す (スレッドセーフ)
     auto IsMainThread() const noexcept -> bool;
 
     /*
@@ -85,10 +85,10 @@ private:
 
 public:
 
-    /// 最大再訪間隔
+    /// 最大再訪間隔 (メインスレッド)
     auto GetRevisitMax() const noexcept -> double;
 
-    /// 経過時間[秒]を返す
+    /// 経過時間[秒]を返す (メインスレッド)
     auto GetIntegerElapsed() noexcept -> std::int64_t;
 
     // auto GetBeginTime() const noexcept -> std::time_t;
