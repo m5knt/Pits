@@ -14,8 +14,10 @@
 #include "Encoding.hpp"
 #include "Timer.hpp"
 
-#include <chrono>
-#include <thread>
+#include <thread>       // this_thread thread::id
+#include <chrono>       // chrono_literals
+#include <string>       // string_literals
+#include <string_view>  // string_view_literals
 
 /**
  * @brief 最低最悪土壺状態から壺を心得る事を目標としながら偏狭な陶芸家の様に壺を割るライブラリ "The Pits"
@@ -74,7 +76,7 @@ private:
     /// 再訪間隔測用タイマー
 	Timer revisit_timer_ {};
 
-    /// 最大遅延
+    /// 最大訪間時間[sec]
     double revisit_max_ {};
 
     /// 経過時間計測用タイマー
@@ -115,15 +117,30 @@ auto IsMainThread() noexcept -> bool
  *
  */
 
-}
+} // namespace Pits
 
-// /**
-//  * @brief リテラルの名前空間
-//  */
-// namespace PitsLiterals {
-//     using namespace std::chrono_literals;
-//     using namespace std::string_literals;
-// }
+/*
+ *
+ */
+
+namespace Pits {
+namespace Standard {
+
+/*
+ *
+ */
+
+using namespace std::string_literals;
+using namespace std::string_view_literals;
+using namespace std::chrono_literals;
+// using namespace std::complex_literals;
+
+/*
+ *
+ */
+
+} // namespace Literals
+} // namespace Pits
 
 /*
  *
