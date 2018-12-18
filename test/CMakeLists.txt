@@ -14,6 +14,13 @@ target_link_libraries(TestEncoding Pits)
 add_executable(TestPits TestPits.cpp)
 target_link_libraries(TestPits Pits)
 
+add_executable(TestStringStream TestStringStream.cpp)
+target_link_libraries(TestStringStream Pits)
+
+
+# add_executable(TestFormat TestFormat.cpp)
+# target_link_libraries(TestFormat Pits)
+
 # set(CMAKE_CXX_FLAGS "/std:c++17")
 # install(TARGETS Pits DESTINATION lib)
 # install(DIRECTORY include/Pits DESTINATION include)
