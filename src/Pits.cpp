@@ -66,7 +66,6 @@ auto Pits::Update() -> void
     elapsed_ += elapsed_timer_.GetIntegerElapsedAndReset();
 }
 
-
 auto Pits::GetRevisitMax() const noexcept -> double
 {
     return revisit_max_;

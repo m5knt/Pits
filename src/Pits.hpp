@@ -51,7 +51,7 @@ public:
      *
      */
 
-    /// 定期集計処理 (メインスレッド)
+    /// 定期集計処理
     auto Update() -> void;
 
 private:
@@ -87,10 +87,10 @@ private:
 
 public:
 
-    /// 最大再訪間隔 (メインスレッド)
+    /// 最大再訪間隔
     auto GetRevisitMax() const noexcept -> double;
 
-    /// 経過時間[秒]を返す (メインスレッド)
+    /// 経過時間[秒]を返す
     auto GetIntegerElapsed() noexcept -> std::int64_t;
 
     // auto GetBeginTime() const noexcept -> std::time_t;
