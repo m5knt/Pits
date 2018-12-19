@@ -1,4 +1,5 @@
 ﻿#include "../src/Encoding.hpp"
+#include <cuchar>>
 #include <cassert>
 #include <string_view>
 
@@ -9,7 +10,7 @@ int main() {
     assert(Pits::GetEncodingType("漢") != Pits::EncodingType::OTHER);
     assert(Pits::GetEncodingType(L"漢") != Pits::EncodingType::OTHER);
 	assert(Pits::GetEncodingType(u8"漢") == Pits::EncodingType::UTF8);
-	assert(Pits::IsSurrogate(L"𐐷"[0]));
+	assert(Pits::IsSurrogate(u"𐐷"[0]));
 
     {   
         auto sv = u8"漢"sv;

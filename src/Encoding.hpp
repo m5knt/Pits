@@ -82,9 +82,7 @@ constexpr auto GetEncodingType(const char* kan) noexcept -> EncodingType
             return EncodingType::UTF8;
         }
     }
-    else {
-        return EncodingType::OTHER;
-    }
+    return EncodingType::OTHER;
 }
 
 /**
@@ -131,16 +129,14 @@ constexpr auto GetEncodingType(const wchar_t* kan) noexcept -> EncodingType
     auto u32 = UTF32Kan;
 
     if (k) {
-        if ((sizeof(k) == sizeof(u16[0])) && (c(k[0]) == u16[0])) {
+        if ((sizeof(k[0]) == sizeof(u16[0])) && (c(k[0]) == u16[0])) {
             return EncodingType::UTF16;
         }
-        else if ((sizeof(k) == sizeof(u32[0])) && (c(k[0]) == u32[0])) {
+        else if ((sizeof(k[0]) == sizeof(u32[0])) && (c(k[0]) == u32[0])) {
             return EncodingType::UTF32;
         }
     }
-    else {
-        return EncodingType::OTHER;
-    }
+    return EncodingType::OTHER;
 }
 
 /**
@@ -229,7 +225,7 @@ constexpr auto IsLowSurrogate(int c) noexcept -> bool
  * @return UTF32文字(失敗時はUTF32ErrorCharactor)
  */
 template <class UTF8Iterator>
-auto UTF8ToUTF32(UTF8Iterator& it, UTF8Iterator end) noexcept -> char32_t
+auto UTF8ToUTF32(UTF8Iterator&& it, UTF8Iterator end) noexcept -> char32_t
 {
     if (it == end) {
         return UnicodeErrorCharacter;
@@ -272,7 +268,7 @@ auto UTF8ToUTF32(UTF8Iterator& it, UTF8Iterator end) noexcept -> char32_t
  * @return UTF32文字(失敗時はUTF32ErrorCharactor)
  */
 template <class UTF16Iterator>
-auto UTF16ToUTF32(UTF16Iterator& it, UTF16Iterator end) noexcept -> char32_t
+auto UTF16ToUTF32(UTF16Iterator&& it, UTF16Iterator end) noexcept -> char32_t
 {
     if (it == end) {
         return UnicodeErrorCharacter;
