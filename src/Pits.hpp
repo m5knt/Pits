@@ -124,7 +124,7 @@ auto IsMainThread() noexcept -> bool
  */
 
 namespace Pits {
-namespace Standard {
+namespace Literals {
 
 /*
  *
