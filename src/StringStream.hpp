@@ -22,7 +22,7 @@ namespace Pits {
 namespace StringStreamImplement {
 
 /**
- * @brief プロテクトへアクセスするだけの継承クラス
+ * @brief std::basic_stringbuf のプロテクトへアクセスするだけの継承クラス
  */
 template <class Char, class Traits, class Allocator>
 class ToStringViewImpl : public std::basic_stringbuf<Char, Traits, Allocator>
@@ -30,7 +30,7 @@ class ToStringViewImpl : public std::basic_stringbuf<Char, Traits, Allocator>
     using stringbuf = std::basic_stringbuf<Char, Traits, Allocator>;
     using string_view = std::basic_string_view<Char>;
 
-    // ユーティリティでしかないので作れなくする
+    // ユーティリティクラスでしかないので作成不可にする
     ToStringViewImpl() = delete;
 
 public:
