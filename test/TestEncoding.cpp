@@ -51,7 +51,7 @@ int main() {
     }
 
     assert((Pits::UTF32ToUTF16(U'𐐷') == std::array<char16_t, 2>{u"𐐷"[0], u"𐐷"[1]}));
-    assert((Pits::UTF32ToUTF16(U'漢') == std::array<char16_t, 2>{u'漢', u'\0'}));
+    assert((Pits::UTF32ToUTF16(U'漢') == std::array<char16_t, 2>{u"漢"[0], u"漢"[1]}));
 
     assert((Pits::UTF32ToUTF8(U'𐐷') == std::array<char, 4>{u8"𐐷"[0], u8"𐐷"[1], u8"𐐷"[2], u8"𐐷"[3]}));
     assert((Pits::UTF32ToUTF8(U'漢') == std::array<char, 4>{u8"漢"[0], u8"漢"[1], u8"漢"[2], u8"漢"[3]}));

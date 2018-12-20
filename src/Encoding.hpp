@@ -21,10 +21,11 @@ inline namespace Encoding {
 
 /*
  * char8_t   8ビットの符号無し整数 __STDC_UTF_8__  マクロ定義時に UTF8保証 (予定 C2x:n2231)
- * char16_t 16ビットの符号付き整数 __STDC_UTF_16__ マクロ定義時に UTF16保証 (C++11)
- * char32_t 32ビットの符号付き整数 __STDC_UTF_32__ マクロ定義時に UTF32保証 (C++11)
+ * char16_t 16ビットの符号無し整数 __STDC_UTF_16__ マクロ定義時に UTF16保証 (C++11)
+ * char32_t 32ビットの符号無し整数 __STDC_UTF_32__ マクロ定義時に UTF32保証 (C++11)
  * 
  * ユニコード文字は 10ffff まで
+ * 
  * Name |Bytes|            Bits|   Ranges| Remarks
  * -----+-----+----------------+---------+------------------------
  * UTF32|    4|              32|ffff'ffff|
@@ -36,13 +37,14 @@ inline namespace Encoding {
  * UTF8 |    2|        5+6 = 11|      3ff|
  * UTF8 |    3|      4+6+6 = 16|     ffff|
  * UTF8 |    4|    3+6+6+6 = 21|  1f'ffff|
+ * -----+-----+----------------+---------+------------------------
  * UTF8 |    5|  2+6+6+6+6 = 26| 3ff'ffff|仕様から削除された
  * UTF8 |    6|1+6+6+6+6+6 = 31|7fff'ffff|仕様から削除された
  * 
  * 参考
- * Unicode         ... https://ja.wikipedia.org/wiki/Unicode
- * Blocks          ... https://ja.wikipedia.org/wiki/%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF_(Unicode)
- * Special Block   ... https://en.wikipedia.org/wiki/Specials_(Unicode_block)
+ * - Unicode        ... https://ja.wikipedia.org/wiki/Unicode
+ * - Blocks         ... https://ja.wikipedia.org/wiki/%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF_(Unicode)
+ * - Special Block  ... https://en.wikipedia.org/wiki/Specials_(Unicode_block)
  */
 
 /// ユニコード変換失敗時の文字
@@ -286,7 +288,7 @@ auto UTF16ToUTF32(UTF16Iterator& it, UTF16Iterator end) noexcept -> char32_t
 /**
  * @brief 正規な UTF32 文字を UTF16 文字へ変換する
  * @param c UTF32 文字
- * @return 1～2要素返す / 不正文字は UnicodeReplacementCharacter になる
+ * @return 1 ～ 2 要素を返す / 不正文字は UnicodeReplacementCharacter を返す
  */
 constexpr auto UTF32ToUTF16(char32_t c) noexcept -> std::array<char16_t, 2>
 {
@@ -305,7 +307,7 @@ constexpr auto UTF32ToUTF16(char32_t c) noexcept -> std::array<char16_t, 2>
 /**
  * @brief 正規な UTF32 文字を UTF8 へ変換する
  * @param c UTF32 文字
- * @return 1～4要素返す / 不正文字は UnicodeReplacementCharacter になる
+ * @return 1 ～ 4 要素を返す / 不正文字は UnicodeReplacementCharacter を返す
  */
 constexpr auto UTF32ToUTF8(char32_t c) -> std::array<char, 4>
 {
