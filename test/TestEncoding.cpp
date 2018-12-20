@@ -21,9 +21,11 @@ int main() {
     assert(Pits::GetEncodingType(u8"漢字") == Pits::EncodingType::UTF8);
     assert(Pits::GetEncodingType(u8"\u6f22\u5b57") == Pits::EncodingType::UTF8);
     assert(Pits::GetEncodingType(u8"\U00006f22\U00005b57") == Pits::EncodingType::UTF8);
+
     assert(Pits::GetEncodingType(u"漢字") == Pits::EncodingType::UTF16);
     assert(Pits::GetEncodingType(u"\u6f22\u5b57") == Pits::EncodingType::UTF16);
     assert(Pits::GetEncodingType(u"\U00006f22\U00005b57") == Pits::EncodingType::UTF16);
+
     assert(Pits::GetEncodingType(U"漢字") == Pits::EncodingType::UTF32);
     assert(Pits::GetEncodingType(U"\u6f22\u5b57") == Pits::EncodingType::UTF32);
     assert(Pits::GetEncodingType(U"\U00006f22\U00005b57") == Pits::EncodingType::UTF32);
@@ -48,8 +50,11 @@ int main() {
         assert(Pits::UTF16ToUTF32(it, sv.end()) == U'字');
     }
 
-    assert(Pits::UTF32ToUTF16(U'𐐷') == std::make_pair(u"𐐷"[0], u"𐐷"[1]));
-    assert(Pits::UTF32ToUTF16(U'漢') == std::make_pair(u'漢', u'\0'));
+    assert((Pits::UTF32ToUTF16(U'𐐷') == std::array<char16_t, 2>{u"𐐷"[0], u"𐐷"[1]}));
+    assert((Pits::UTF32ToUTF16(U'漢') == std::array<char16_t, 2>{u'漢', u'\0'}));
+
+    assert((Pits::UTF32ToUTF8(U'𐐷') == std::array<char, 4>{u8"𐐷"[0], u8"𐐷"[1], u8"𐐷"[2], u8"𐐷"[3]}));
+    assert((Pits::UTF32ToUTF8(U'漢') == std::array<char, 4>{u8"漢"[0], u8"漢"[1], u8"漢"[2], u8"漢"[3]}));
 
 #endif
 
