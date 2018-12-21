@@ -90,7 +90,7 @@ constexpr auto GetMultiByteKanjiEncodingType(const MultiByteChara* target) noexc
     using cast = std::uint8_t;
     {
         // UTF8 1 ～ 4バイト
-        constexpr std::uint8_t source[] = { 0xe6, 0xbc, 0xa2, 0xe5, 0xad, 0x97 };
+        std::uint8_t source[] = { 0xe6, 0xbc, 0xa2, 0xe5, 0xad, 0x97 };
         auto s = source;
         auto t = target;
         if (cast(*t) == *s && cast(*++t) == *++s && cast(*++t) == *++s && cast(*++t) == *++s) {
@@ -99,7 +99,7 @@ constexpr auto GetMultiByteKanjiEncodingType(const MultiByteChara* target) noexc
     }
     {
         // SJIS 1 ～ 2バイト
-        constexpr std::uint8_t source[] = { 0x8a, 0xbf, 0x8e, 0x9a};
+        std::uint8_t source[] = { 0x8a, 0xbf, 0x8e, 0x9a};
         auto s = source;
         auto t = target;
         if (cast(*t) == *s && cast(*++t) == *++s && cast(*++t) == *++s && cast(*++t) == *++s) {
@@ -114,20 +114,20 @@ constexpr auto GetWideKanjiEncodingType(const WideChara* target) noexcept -> Enc
 {
     if (sizeof(*target) == sizeof(char16_t)) {
 
-        constexpr char16_t source[] = { 0x6f22, 0x5b57 };
+        using cast = char16_t;
+        char16_t source[] = { 0x6f22, 0x5b57 };
         auto t = target;
         auto s = source;
-        using cast = decltype(*s);
         if (cast(*t) == *s && cast(*++t) == *++s) {
             return EncodingType::UTF16;
         }
 
     } else if (sizeof(*target) == sizeof(char32_t)) {
 
-        constexpr char32_t source[] = { 0x6f22, 0x5b57 };
+        using cast = char32_t;
+        char32_t source[] = { 0x6f22, 0x5b57 };
         auto s = source;
         auto t = target;
-        using cast = decltype(*s);
         if (cast(*t) == *s && cast(*++t) == *++s) {
             return EncodingType::UTF32;
         }
@@ -136,30 +136,30 @@ constexpr auto GetWideKanjiEncodingType(const WideChara* target) noexcept -> Enc
 }
 
 template <class Char>
-struct Encoding;
+struct KanjiEncoding;
 
 template <>
-struct Encoding<char> {
+struct KanjiEncoding<char> {
     static constexpr auto GetEncodingType = GetMultiByteKanjiEncodingType<char>;
 };
 
 template <>
-struct Encoding<char8_t> {
+struct KanjiEncoding<char8_t> {
     static constexpr auto GetEncodingType = GetMultiByteKanjiEncodingType<char>;
 };
 
 template <>
-struct Encoding<wchar_t> {
+struct KanjiEncoding<wchar_t> {
     static constexpr auto GetEncodingType = GetWideKanjiEncodingType<wchar_t>;
 };
 
 template <>
-struct Encoding<char16_t> {
+struct KanjiEncoding<char16_t> {
     static constexpr auto GetEncodingType = GetWideKanjiEncodingType<char16_t>;
 };
 
 template <>
-struct Encoding<char32_t> {
+struct KanjiEncoding<char32_t> {
     static constexpr auto GetEncodingType = GetWideKanjiEncodingType<char32_t>;
 };
 
@@ -170,13 +170,20 @@ struct Encoding<char32_t> {
  */
 
 /**
- * @brief X"漢字" リテラルのエンコード種別を返す
+ * @brief "漢字" リテラルのエンコード種別を返す
+ * 
+ * C/C++言語仕様上 char[] wchar_t[] char8_t[] char16_t[] char32_t[] は
+ * 特定のエンコードではない為、決め打ち実装時に厳密に判定出来るよう関数を用意している
+ * 
  * @param kanji "漢字" L"漢字" u8"漢字" u"漢字" U"漢字" リテラルを渡す
- * @return EncodingType 
+ * @return EncodingType
+ * 
+ * SJIS でコンパイルされないと問題の出るソース等で次の様にする
+ * static_assert(Pits::GetKanjiEncodingType("漢字") == Pits::EncodingType::SJIS);
  */
 template <class Chara>
 constexpr auto GetKanjiEncodingType(const Chara* kanji) noexcept -> EncodingType {
-    return EncodingImplement::Encoding<Chara>::GetEncodingType(kanji);
+    return EncodingImplement::KanjiEncoding<Chara>::GetEncodingType(kanji);
 }
 
 /**

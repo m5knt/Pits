@@ -1,5 +1,5 @@
 ﻿#include "../src/Encoding.hpp"
-#include <cuchar>
+#include <uchar.h>
 #include <cassert>
 #include <string_view>
 #include <iostream>
@@ -14,6 +14,7 @@ int main() {
     // ビルド環境で変わるので識別出来たかだけ確認
     static_assert(Pits::GetKanjiEncodingType(L"漢字") != Pits::EncodingType::OTHER);
 
+// char16_t, char32_t が UTF ではない環境がいかほどあるのか謎だけどとりあえず
 #if defined(__STDC_UTF_16__) && defined(__STDC_UTF_32__)
 
     std::cout << "defined __STDC_UTF_16__ __STDC_UTF_32__" << std::endl;
