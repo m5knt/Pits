@@ -48,12 +48,12 @@ Pits::Pits()
 
 auto Pits::GetMultiByteEncoding() const noexcept -> EncodingType
 {
-    return GetEncodingType("漢");
+    return GetKanjiEncodingType("漢");
 }
 
 auto Pits::GetWideCharEncoding() const noexcept -> EncodingType
 {
-    return GetEncodingType(L"漢");
+    return GetKanjiEncodingType(L"漢");
 }
 
 /*
