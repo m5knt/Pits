@@ -92,7 +92,7 @@ constexpr char32_t CharacterMax = 0x10ffff;
  */
 
 /**
- * @brief キャラクタとして扱わないコードであるか返す (fffe, ffff ... 10fffe, 10ffff)
+ * @brief キャラクタとして扱わないコードであるか返す (0xfffe, 0xffff ... 0x10fffe, 0x10ffff)
  * @param c 文字
  * @return 真偽
  */
@@ -138,7 +138,6 @@ constexpr auto IsLowSurrogate(char32_t c) noexcept -> bool
  */
 constexpr auto IsUnsafeUTF32(char32_t c) -> bool
 {
-    using namespace Unicode;
     return (CharacterMax < c) || IsSurrogate(c) || IsNoncharacters(c);
 }
 
