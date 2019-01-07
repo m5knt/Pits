@@ -5,12 +5,11 @@
 
 int main() {
 
-    std::stringstream ss;
+    Pits::BasicStringStream<char> ss;
     ss << "ABC";   
-    assert(Pits::ToStringView(ss) == ss.str());
+    assert(ss.str() == ss.stringstream::str());
     char c;
     ss >> c;
-    assert(Pits::ToStringView(ss) == ss.str());
-    assert(Pits::ToStringView((std::stringbuf*)0) == std::string_view());
+    assert(ss.str() == ss.stringstream::str());
     return 0;
 }

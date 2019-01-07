@@ -7,8 +7,10 @@
 #ifndef PITS_STRINGSTREAM_HPP_
 #define PITS_STRINGSTREAM_HPP_
 
-#include <sstream>
+#include <memory>       // allocator
+#include <string>       // char_traits
 #include <string_view>
+#include <sstream>
 
 /*
  *
@@ -27,7 +29,10 @@ namespace StringStreamImplement {
 template <class Char, class Traits, class Allocator>
 class ToStringViewImpl : public std::basic_stringbuf<Char, Traits, Allocator>
 {
+    /// 基底となる stringbuf の型
     using stringbuf = std::basic_stringbuf<Char, Traits, Allocator>;
+
+    /// バッファを参照する型
     using string_view = std::basic_string_view<Char>;
 
     // ユーティリティクラスでしかないので作成不可にする
@@ -70,33 +75,9 @@ public:
 
 } // namespace StringStreamImplement
 
-/**
- * @brief バッファを参照する string_view を返す
- * @param ss ストリングストリーム
- * @return ストリングビュー
+/*
+ *
  */
-template <class Char, class Traits, class Allocator>
-inline
-auto ToStringView(const std::basic_stringstream<Char, Traits, Allocator>& ss) noexcept
-        -> std::basic_string_view<Char>
-{
-    using impl = StringStreamImplement::ToStringViewImpl<Char, Traits, Allocator>;
-    return impl::ToStringView(ss.rdbuf());
-}
-
-/**
- * @brief バッファを参照する string_view を返す
- * @param ss ストリングストリーム
- * @return ストリングビュー
- */
-template <class Char, class Traits, class Allocator>
-inline
-auto ToStringView(std::basic_stringstream<Char, Traits, Allocator>& ss) noexcept
-        -> std::basic_string_view<Char>
-{
-    using impl = StringStreamImplement::ToStringViewImpl<Char, Traits, Allocator>;
-    return impl::ToStringView(ss.rdbuf());
-}
 
 /**
  * @brief バッファを参照する string_view を返す
@@ -104,31 +85,43 @@ auto ToStringView(std::basic_stringstream<Char, Traits, Allocator>& ss) noexcept
  * @return ストリングビュー
  */
 template <class Char, class Traits, class Allocator>
-inline
-auto ToStringView(const std::basic_stringbuf<Char, Traits, Allocator>* sb) noexcept
-        -> std::basic_string_view<Char>
-{
-    using impl = StringStreamImplement::ToStringViewImpl<Char, Traits, Allocator>;
-	return impl::ToStringView(sb);
-}
+using ToStringView = StringStreamImplement::ToStringViewImpl<Char, Traits, Allocator>;
 
 /**
- * @brief バッファを参照する string_view を返す
- * @param sb ストリングバッファーポインタ
- * @return ストリングビュー
+ * @brief str() で string_view を返す stringstream の派生クラス
  */
-template <class Char, class Traits, class Allocator> 
-inline
-auto ToStringView(std::basic_stringbuf<Char, Traits, Allocator>* sb) noexcept
-        -> std::basic_string_view<Char>
-{
-    using impl = StringStreamImplement::ToStringViewImpl<Char, Traits, Allocator>;
-	return impl::ToStringView(sb);
-}
+template <class Char, class Traits = std::char_traits<Char>, class Allocator =  std::allocator<Char>>
+class BasicStringStream : public std::basic_stringstream<Char, Traits, Allocator> {
+
+public:
+
+    /// 基底となる basic_stringstream の型
+    using stringstream = std::basic_stringstream<Char, Traits, Allocator>;
+
+    /// バッファデバイスとなる basic_stringbuf の型
+    using stringbuf = std::basic_stringbuf<Char, Traits, Allocator>;
+
+    /// バッファを参照する型
+    using string_view = std::basic_string_view<Char>;
+
+    using stringstream::stringstream;
+
+    /**
+     * @brief バッファの内容を string_view 型のオブジェクトで返す
+     * @return string_view 
+     */
+    auto str() const -> string_view
+    {
+        using impl = StringStreamImplement::ToStringViewImpl<Char, Traits, Allocator>;
+        return impl::ToStringView(rdbuf());
+    };
+
+};
 
 /*
  *
  */
+
 
 } // namespace Pits
 
