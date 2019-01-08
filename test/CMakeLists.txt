@@ -8,6 +8,9 @@ include_directories(source "../src")
 add_executable(TestTimer TestTimer.cpp)
 target_link_libraries(TestTimer Pits)
 
+add_executable(TestStringLiteral TestStringLiteral.cpp)
+target_link_libraries(TestStringLiteral Pits)
+
 add_executable(TestEncoding TestEncoding.cpp)
 target_link_libraries(TestEncoding Pits)
 
