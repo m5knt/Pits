@@ -11,7 +11,7 @@
  *
  */
 
-#include "Pits/Encoding.hpp"
+#include "Pits/StringLiteral.hpp"
 #include "Pits/Timer.hpp"
 
 #include <thread>       // this_thread thread::id
@@ -42,10 +42,10 @@ public:
 public:
 
     /// ライブラリビルド時のマルチバイト文字列エンコード種別
-    auto GetMultiByteEncoding() const noexcept -> EncodingType;
+    auto GetMultiByteEncoding() const noexcept -> StringLiteral::EncodingTypes;
 
     /// ライブラリビルド時のワイド文字列エンコード種別
-    auto GetWideCharEncoding() const noexcept -> EncodingType;
+    auto GetWideCharEncoding() const noexcept ->StringLiteral::EncodingTypes;
 
     /*
      *

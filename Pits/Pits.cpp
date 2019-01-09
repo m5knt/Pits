@@ -46,14 +46,14 @@ Pits::Pits()
  *
  */
 
-auto Pits::GetMultiByteEncoding() const noexcept -> EncodingType
+auto Pits::GetMultiByteEncoding() const noexcept -> StringLiteral::EncodingTypes
 {
-    return GetKanjiEncodingType("漢");
+    return StringLiteral::DetectEncoding("漢字");
 }
 
-auto Pits::GetWideCharEncoding() const noexcept -> EncodingType
+auto Pits::GetWideCharEncoding() const noexcept -> StringLiteral::EncodingTypes
 {
-    return GetKanjiEncodingType(L"漢");
+    return StringLiteral::DetectEncoding(L"漢字");
 }
 
 /*

@@ -5,8 +5,8 @@
 
 int main() {
 
-    assert(Pits::Pits.GetMultiByteEncoding() != Pits::EncodingType::OTHER);
-    assert(Pits::Pits.GetWideCharEncoding() != Pits::EncodingType::OTHER);
+    assert(Pits::Pits.GetMultiByteEncoding() != Pits::StringLiteral::OTHER);
+    assert(Pits::Pits.GetWideCharEncoding() != Pits::StringLiteral::OTHER);
 
     assert(Pits::Pits.IsMainThread());
 

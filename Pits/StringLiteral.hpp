@@ -51,11 +51,11 @@ namespace StringLiteral {
      * @return EncodingType
      * 
      * SJIS でコンパイルされないと問題の出るソース等で次の様にする
-     * static_assert(Pits::StringLiteral::EncodingDetect("漢字") == Pits::StringLiteral::SJIS);
+     * static_assert(Pits::StringLiteral::DetectEncoding("漢字") == Pits::StringLiteral::SJIS);
      * 
      * https://docs.microsoft.com/ja-jp/cpp/build/reference/source-charset-set-source-character-set?view=vs-2017
      */
-    constexpr auto EncodingDetect(const char* kanji) -> EncodingTypes
+    constexpr auto DetectEncoding(const char* kanji) -> EncodingTypes
     {
         // 実際はヌル文字含め最短となる5要素を評価する
         // 以下4つはプログラムソースで表現できないはずなので評価しない
@@ -87,7 +87,7 @@ namespace StringLiteral {
     /**
      * @brief リテラル L"漢字" のエンコード種別を返す
      */
-    constexpr auto EncodingDetect(const wchar_t* kanji) noexcept -> EncodingTypes
+    constexpr auto DetectEncoding(const wchar_t* kanji) noexcept -> EncodingTypes
     {
         if (sizeof(*kanji) == sizeof(char16_t)) {
 
@@ -117,7 +117,7 @@ namespace StringLiteral {
      * 
      * __STDC_UTF_16__ 判定で十分と思われるが一貫性の為に用意
      */
-    constexpr auto EncodingDetect(const char16_t* kanji) -> EncodingTypes
+    constexpr auto DetectEncoding(const char16_t* kanji) -> EncodingTypes
     {
 #ifdef __STDC_UTF_16__
         char16_t origin[] = {0x6f22, 0x5b57};
@@ -134,7 +134,7 @@ namespace StringLiteral {
      * 
      * __STDC_UTF_32__ 判定で十分と思われるが一貫性の為に用意
      */
-    constexpr auto EncodingDetect(const char32_t* kanji) -> EncodingTypes
+    constexpr auto DetectEncoding(const char32_t* kanji) -> EncodingTypes
     {
 #ifdef __STDC_UTF_32__
         char32_t origin[] = {0x6f22, 0x5b57};

@@ -8,27 +8,10 @@
 using namespace std::literals;
 
 int main() {
-        // ビルド環境で変わるので識別出来たかだけ確認
-    static_assert(Pits::GetKanjiEncodingType("漢字") != Pits::EncodingType::OTHER);
-
-    // ビルド環境で変わるので識別出来たかだけ確認
-    static_assert(Pits::GetKanjiEncodingType(L"漢字") != Pits::EncodingType::OTHER);
 
 #if defined(__STDC_UTF_16__) && defined(__STDC_UTF_32__)
 
     std::cout << "defined __STDC_UTF_16__ __STDC_UTF_32__" << std::endl;
-
-    static_assert(Pits::GetKanjiEncodingType(u8"漢字") == Pits::EncodingType::UTF8);
-    static_assert(Pits::GetKanjiEncodingType(u8"\u6f22\u5b57") == Pits::EncodingType::UTF8);
-    static_assert(Pits::GetKanjiEncodingType(u8"\U00006f22\U00005b57") == Pits::EncodingType::UTF8);
-
-    static_assert(Pits::GetKanjiEncodingType(u"漢字") == Pits::EncodingType::UTF16);
-    static_assert(Pits::GetKanjiEncodingType(u"\u6f22\u5b57") == Pits::EncodingType::UTF16);
-    static_assert(Pits::GetKanjiEncodingType(u"\U00006f22\U00005b57") == Pits::EncodingType::UTF16);
-
-    static_assert(Pits::GetKanjiEncodingType(U"漢字") == Pits::EncodingType::UTF32);
-    static_assert(Pits::GetKanjiEncodingType(U"\u6f22\u5b57") == Pits::EncodingType::UTF32);
-    static_assert(Pits::GetKanjiEncodingType(U"\U00006f22\U00005b57") == Pits::EncodingType::UTF32);
 
     static_assert(Pits::Unicode::IsSurrogate(u"𐐷"[0]));
     static_assert(Pits::Unicode::IsSurrogate(u"𐐷"[1]));
