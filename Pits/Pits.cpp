@@ -4,7 +4,7 @@
  * @file 
  */
 
-#include "Pits.hpp"
+#include "Pits/Pits.hpp"
 #include <algorithm>    // min
 #include <iostream>
 

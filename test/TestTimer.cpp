@@ -1,4 +1,4 @@
-﻿#include "../src/Timer.hpp"
+﻿#include "Pits/Timer.hpp"
 #include <cstdlib>
 #include <cassert>
 #include <thread>

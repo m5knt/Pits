@@ -11,8 +11,8 @@
  *
  */
 
-#include "Encoding.hpp"
-#include "Timer.hpp"
+#include "Pits/Encoding.hpp"
+#include "Pits/Timer.hpp"
 
 #include <thread>       // this_thread thread::id
 #include <chrono>       // chrono_literals

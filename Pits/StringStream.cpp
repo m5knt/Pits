@@ -4,7 +4,7 @@
  * @file
  */
 
-#include "StringStream.hpp"
+#include "Pits/StringStream.hpp"
 
 /*
  *

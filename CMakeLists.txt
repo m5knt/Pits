@@ -14,8 +14,9 @@ endif()
 add_definitions(-DPITS_BUILD)
 
 # == build
-file(GLOB SOURCES "src/*.cpp")
-file(GLOB HEADERS "src/*.hpp")
+file(GLOB SOURCES "Pits/*.cpp")
+file(GLOB HEADERS "Pits/*.hpp")
+include_directories(Pits "Pits/..")
 add_library(Pits STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(Pits)
 

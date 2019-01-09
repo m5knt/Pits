@@ -1,4 +1,4 @@
-﻿#include "../src/Pits.hpp"
+﻿#include "Pits/Pits.hpp"
 #include <cstdlib>
 #include <cassert>
 #include <thread>

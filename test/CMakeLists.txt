@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(PitsTest CXX)
 
-include_directories(source "../src")
+include_directories(source "../Pits/..")
 
 add_executable(TestTimer TestTimer.cpp)
 target_link_libraries(TestTimer Pits)
