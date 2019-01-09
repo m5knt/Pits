@@ -30,6 +30,7 @@ namespace StringLiteral {
         // マルチバイト系
         UTF8,       ///< UTF8  1 ～ 4 Bytes
         SJIS,       ///< SJIS  1 ～ 2 Bytes (Aka CP932, MS932, Windows31J)
+        // EUCJP,
 
         // ワイド系
         UTF16,      ///< UTF16 (Native)
@@ -51,9 +52,12 @@ namespace StringLiteral {
      * 
      * SJIS でコンパイルされないと問題の出るソース等で次の様にする
      * static_assert(Pits::StringLiteral::EncodingDetect("漢字") == Pits::StringLiteral::SJIS);
+     * 
+     * https://docs.microsoft.com/ja-jp/cpp/build/reference/source-charset-set-source-character-set?view=vs-2017
      */
     constexpr auto EncodingDetect(const char* kanji) -> EncodingTypes
     {
+        // 実際はヌル文字含め最短となる5要素を評価する
         // 以下4つはプログラムソースで表現できないはずなので評価しない
         // UTF16BE {0x6f, 0x22, 0x5b, 0x57};
         // UTF16LE {0x22, 0x6f, 0x57, 0x5b};
@@ -62,16 +66,14 @@ namespace StringLiteral {
 
         using cast = std::uint8_t;
         {
-            // UTF8 1 ～ 4バイト
             std::uint8_t origin[] = {0xe6, 0xbc, 0xa2, 0xe5, 0xad, 0x97};
             auto o = origin;
             auto k = kanji;
-            if (cast(*k) == *o && cast(*++k) == *++o && cast(*++k) == *++o && cast(*++k) == *++o) {
+            if (cast(*k) == *o && cast(*++k) == *++o && cast(*++k) == *++o && cast(*++k) == *++o && cast(*++k) == *++o) {
                 return UTF8;
             }
         }
         {
-            // SJIS 1 ～ 2バイト
             std::uint8_t origin[] = {0x8a, 0xbf, 0x8e, 0x9a};
             auto o = origin;
             auto k = kanji;
@@ -81,7 +83,6 @@ namespace StringLiteral {
         }
         return OTHER;
     }
-
 
     /**
      * @brief リテラル L"漢字" のエンコード種別を返す
@@ -114,7 +115,7 @@ namespace StringLiteral {
     /**
      * @brief リテラル u"漢字" のエンコード種別を返す
      * 
-     * __STDC_UTF_16__ 判定で十分と思われるが一貫性の為用意
+     * __STDC_UTF_16__ 判定で十分と思われるが一貫性の為に用意
      */
     constexpr auto EncodingDetect(const char16_t* kanji) -> EncodingTypes
     {
@@ -131,7 +132,7 @@ namespace StringLiteral {
     /**
      * @brief リテラル U"漢字" のエンコード種別を返す
      * 
-     * __STDC_UTF_32__ 判定で十分と思われるが一貫性の為用意
+     * __STDC_UTF_32__ 判定で十分と思われるが一貫性の為に用意
      */
     constexpr auto EncodingDetect(const char32_t* kanji) -> EncodingTypes
     {
