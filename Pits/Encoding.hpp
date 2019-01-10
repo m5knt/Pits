@@ -228,7 +228,7 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
     }
     else {
         // 読み込みコードポイント毎に置き換え
-        return {EncodingErrorIllegalSequence, ++begin};
+        return {EncodingErrorIllegalSequence, it};
     }
 
     // マルチバイト後続確認
