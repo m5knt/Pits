@@ -167,9 +167,9 @@ constexpr auto IsSafeUTF32(char32_t c) -> bool
  */
 
 /**
- * @brief UTF32 を UTF8 へ変換する
- * @param from UTF32 コード 正しいエンコーディングである事
- * @param out UTF8 出力イテレーター 1～4 動く
+ * @brief UTF32 を UTF8 へ一文字変換する
+ * @param from UTF32 コード 正しいエンコーディングである事 (1 動く)
+ * @param out UTF8 出力イテレーター (1 ～ 4 動く)
  * @return 移動したout
  */
 template <class UTF32Iterator, class UTF8Iterator,
@@ -204,9 +204,9 @@ constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to) noexcept 
 }
 
 /**
- * @brief UTF32 を UTF16 へ変換する
- * @param from UTF32 入力イテレータ 正しいエンコーディングである事
- * @param to UTF16 出力イテレータ 1～2 動く
+ * @brief UTF32 を UTF16 へ一文字変換する
+ * @param from UTF32 入力イテレータ 正しいエンコーディングである事 (1 動く)
+ * @param to UTF16 出力イテレータ (1 ～ 2 動く)
  * @return 移動後の from と to
  */
 template <class UTF16Iterator, class UTF32Iterator,
@@ -223,16 +223,16 @@ constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to) noexcep
     }
     else {
         *to++ = char16_t(((c - 0x10000) / 0x400) + 0xd800);
-        *to++ = char16_t(((c - 0x10000) & 0x3ff) + 0xdc00);
+        *to++ = char16_t(((c - 0x10000) % 0x400) + 0xdc00);
     }
 
     return {from, to};
 }
 
 /**
- * @brief UTF8 を UTF32 へ変換する
- * @param from UTF8 入力イテレータ 正しいエンコーディングである事 1～4 動く
- * @param to UTF32 出力イテレータ
+ * @brief UTF8 を UTF32 へ一文字変換する
+ * @param from UTF8 入力イテレータ 正しいエンコーディングである事 (1 ～ 4 動く)
+ * @param to UTF32 出力イテレータ (1 動く)
  * @return 移動後の from と to
  */
 template <class UTF8Iterator, class UTF32Iterator,
@@ -244,8 +244,8 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
 {
     auto c = char32_t(*from++ & 0xff);
 
-    if (c < 0b0'1000'0000) {        //  0 ～ 7f 0 ～ 7f 7
-        // pass
+    /**/ if (c < 0b0'1000'0000) {   //  0 ～ 7f 0 ～ 7f 7
+        static_cast<void>(nullptr);
     }
     else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6 
         c = (c & 0b0'0001'1111) << 6;
@@ -268,9 +268,9 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
 }
 
 /**
- * @brief UTF16 を UTF32 へ変換する
- * @param from UTF16 入力イテレータ 正しいエンコーディングである事 1～2 動く
- * @param to UTF32 出力イテレータ
+ * @brief UTF16 を UTF32 へ一文字変換する
+ * @param from UTF16 入力イテレータ 正しいエンコーディングである事 (1 ～ 2 動く)
+ * @param to UTF32 出力イテレータ (1 動く)
  * @return 移動後の from と to
  */
 template <class UTF16Iterator, class UTF32Iterator,
