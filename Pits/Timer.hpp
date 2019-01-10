@@ -21,6 +21,9 @@ namespace Pits {
  * @brief 時間(std::chrono::duration)を任意の型の秒にする
  * @param d 時間 duration 型である事
  * @return 秒
+ * 
+ * auto fsecs = Pits::ToSeconds<float>(std::chrono::milliseconds(1500))
+ * auto isecs = Pits::ToSeconds<int>(std::chrono::milliseconds(1500))
  */
 template <class SecondsType, class Duration>
 inline
