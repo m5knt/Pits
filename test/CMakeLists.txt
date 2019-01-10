@@ -20,6 +20,9 @@ target_link_libraries(TestPits Pits)
 add_executable(TestStringStream TestStringStream.cpp)
 target_link_libraries(TestStringStream Pits)
 
+add_executable(TestStrictUnicode TestStrictUnicode.cpp)
+target_link_libraries(TestStrictUnicode Pits)
+
 
 # add_executable(TestFormat TestFormat.cpp)
 # target_link_libraries(TestFormat Pits)

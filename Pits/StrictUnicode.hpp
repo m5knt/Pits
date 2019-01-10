@@ -1,5 +1,5 @@
 ﻿/**
- * @brief ユニコード関係
+ * @brief "", L"", u"", U"" がユニコードで有るか確認する
  * @author Yukio KANEDA
  * @file 
  */
@@ -20,19 +20,21 @@ namespace StrictUnicode {
  *
  */
 
-constexpr auto MultiByteEncoding = Pits::String::DetectKanjiEncoding("漢字")
-constexpr auto WideCharEncoding = Pits::String::DetectKanjiEncoding(L"漢字")
+/// "" がユニコードで有るか確認する
+static_assert(String::MultiByteEncoding == Pits::String::UTF8);
 
-static_assert(MultiByteEncoding == Pits::String::UTF8);
-static_assert(WideCharEncoding == Pits::String::UTF16 || WideCharEncoding == Pits::String::UTF32);
+/// L"" がユニコードで有るか確認する
+static_assert(String::WideCharEncoding == Pits::String::UTF16 || String::WideCharEncoding == Pits::String::UTF32);
+
+/// u"" がユニコードで有るか確認する
+static_assert(String::Char16Encoding == Pits::String::UTF16);
+
+/// U"" がユニコードで有るか確認する
+static_assert(String::Char32Encoding == Pits::String::UTF32);
 
 /*
  *
  */
-
-#if !defined(__STDC_UTF_16__) || !defined(__STDC_UTF_32__)
-static_assert(false);
-#endif
 
 } // namespace StrictUnicode
 } // namespace Pits
