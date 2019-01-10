@@ -1,4 +1,5 @@
 ﻿#include "Pits/Encoding.hpp"
+#include "Pits/Timer.hpp"
 #include <uchar.h>
 #include <cassert>
 #include <string_view>
@@ -6,6 +7,41 @@
 #include <codecvt>
 
 using namespace std::literals;
+
+template <class UTF8Iterator,
+    class Require = typename std::iterator_traits<UTF8Iterator>::value_type
+>
+constexpr auto EncodingUTF32ToUTF8Unsafe2(char32_t from, UTF8Iterator out) -> UTF8Iterator
+{
+    auto c = from;
+
+    if (c <= 0x7f) {
+        *out++ = char8_t(c);
+    }
+    else if (c <= 0x7ff) {
+        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1100'0000);
+        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
+    }
+    else if (c <= 0xffff) {
+        *out++ = char8_t(((c >> 12) & 0b0'0001'1111) | 0b0'1110'0000);
+        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
+        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
+    }
+    else {
+        *out++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
+        *out++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
+        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
+        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
+    }
+    return out;
+}
+
+template <class Job>
+void Bench(Job job) {
+    Pits::Timer begin;
+    job();
+    std::cout << begin.GetElapsed() <<std::endl;
+}
 
 int main() {
 
@@ -34,7 +70,6 @@ int main() {
         static_assert(std::get<0>(Pits::EncodingUTF8ToUTF32("\xff\0")) == Pits::EncodingErrorIllegalSequence);
     }
     {
-        constexpr auto str = u"𐐷漢字";
         constexpr auto a0 = Pits::EncodingUTF16ToUTF32(u"𐐷漢字");
         static_assert(std::get<0>(a0) == U'𐐷');
         constexpr auto a1 = Pits::EncodingUTF16ToUTF32(std::get<1>(a0));

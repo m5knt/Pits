@@ -11,6 +11,9 @@ target_link_libraries(TestTimer Pits)
 add_executable(TestString TestString.cpp)
 target_link_libraries(TestString Pits)
 
+add_executable(TestUnicode TestUnicode.cpp)
+target_link_libraries(TestUnicode Pits)
+
 add_executable(TestEncoding TestEncoding.cpp)
 target_link_libraries(TestEncoding Pits)
 
