@@ -5,7 +5,7 @@
  * @file 
  */
 
-#include "Pits/StringLiteral.hpp"
+#include "Pits/String.hpp"
 
 /*
  *

@@ -11,7 +11,7 @@
  *
  */
 
-#include "Pits/StringLiteral.hpp"
+#include "Pits/String.hpp"
 #include "Pits/Timer.hpp"
 
 #include <thread>       // this_thread thread::id
@@ -42,10 +42,10 @@ public:
 public:
 
     /// ライブラリビルド時のマルチバイト文字列エンコード種別
-    auto GetMultiByteEncoding() const noexcept -> StringLiteral::EncodingTypes;
+    auto GetMultiByteEncoding() const noexcept -> String::EncodingTypes;
 
     /// ライブラリビルド時のワイド文字列エンコード種別
-    auto GetWideCharEncoding() const noexcept ->StringLiteral::EncodingTypes;
+    auto GetWideCharEncoding() const noexcept ->String::EncodingTypes;
 
     /*
      *
@@ -65,6 +65,12 @@ public:
     auto IsMainThread() const noexcept -> bool
     {
         return std::this_thread::get_id() == main_thread_id_;
+    }
+
+    /// メインスレッドで有るか返す (スレッドセーフ)
+    auto IsMainThread(std::thread::id id) const noexcept -> bool
+    {
+        return id == main_thread_id_;
     }
 
     /*
@@ -106,11 +112,18 @@ public:
 /// 各種動作状況の纏め
 extern class Pits Pits;
 
-/// 現在のスレッドがメインスレッドで有るか返す (スレッドセーフ)
+/// 現在のスレッドがメインスレッドで有るか返す (main関数以降スレッドセーフ)
 inline
 auto IsMainThread() noexcept -> bool
 {
     return Pits.IsMainThread();
+}
+
+/// メインスレッドで有るか返す (main関数以降スレッドセーフ)
+inline
+auto IsMainThread(std::thread::id id) noexcept -> bool
+{
+    return Pits.IsMainThread(id);
 }
 
 /*
