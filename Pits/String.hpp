@@ -55,7 +55,7 @@ enum EncodingTypes {
  * 
  * https://docs.microsoft.com/ja-jp/cpp/build/reference/source-charset-set-source-character-set?view=vs-2017
  */
-constexpr auto DetectKanjiEncoding(const char* kanji) -> EncodingTypes
+constexpr auto DetectKanjiEncoding(const char* kanji) noexcept -> EncodingTypes
 {
     // 実際はヌル文字含め最短となる5要素を評価する
     // 以下4つはプログラムソースで表現できないはずなので評価しない
@@ -117,7 +117,7 @@ constexpr auto DetectKanjiEncoding(const wchar_t* kanji) noexcept -> EncodingTyp
  * 
  * __STDC_UTF_16__ 判定で十分と思われるが一貫性の為に用意
  */
-constexpr auto DetectKanjiEncoding(const char16_t* kanji) -> EncodingTypes
+constexpr auto DetectKanjiEncoding(const char16_t* kanji) noexcept -> EncodingTypes
 {
 #ifdef __STDC_UTF_16__
     char16_t origin[] = {0x6f22, 0x5b57};
@@ -134,7 +134,7 @@ constexpr auto DetectKanjiEncoding(const char16_t* kanji) -> EncodingTypes
  * 
  * __STDC_UTF_32__ 判定で十分と思われるが一貫性の為に用意
  */
-constexpr auto DetectKanjiEncoding(const char32_t* kanji) -> EncodingTypes
+constexpr auto DetectKanjiEncoding(const char32_t* kanji) noexcept -> EncodingTypes
 {
 #ifdef __STDC_UTF_32__
     char32_t origin[] = {0x6f22, 0x5b57};
@@ -145,6 +145,22 @@ constexpr auto DetectKanjiEncoding(const char32_t* kanji) -> EncodingTypes
     return UNKNOWN;
 #endif
 }
+
+/*
+ *
+ */
+
+/// 文字列リテラルのエンコード
+constexpr auto MultiByteEncoding = DetectKanjiEncoding("漢字");
+
+/// 文字列リテラルのエンコード
+constexpr auto WideCharEncoding = DetectKanjiEncoding(L"漢字");
+
+/// 文字列リテラルのエンコード
+constexpr auto Char16Encoding = DetectKanjiEncoding(u"漢字");
+
+/// 文字列リテラルのエンコード
+constexpr auto Char32Encoding = DetectKanjiEncoding(U"漢字");
 
 /*
  *
