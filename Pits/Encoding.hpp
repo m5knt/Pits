@@ -42,10 +42,10 @@ inline namespace Encoding {
  */
 
 /// 不正なデータ列 (UTF32と被らない値)
-constexpr char32_t EncodingErrorIllegalSequence = -1;
+constexpr char32_t EncodingErrorIllegalSequence = char32_t(-1);
 
 /// エンコーディングに必要なデータが足りない (UTF32と被らない値)
-constexpr char32_t EncodingErrorNotEnough = -2;
+constexpr char32_t EncodingErrorNotEnough = char32_t(-2);
 
 /**
  * @brief エンコーディングエラーなら文字を置き換える
@@ -105,32 +105,22 @@ constexpr auto EncodingUTF32ToUTF8Unsafe(char32_t from, UTF8Iterator out) -> UTF
     auto c = from;
 
     if (c <= 0x7f) {
-        auto c0 = char8_t(c);
-        *out++ = c0;
+        *out++ = char8_t(c);
     }
     else if (c <= 0x7ff) {
-        auto c1 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c0 = char8_t((c & 0b0'0011'1111) | 0b0'1100'0000);
-        *out++ = c0;
-        *out++ = c1;
+        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1100'0000);
+        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
     }
     else if (c <= 0xffff) {
-        auto c2 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c1 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c0 = char8_t((c & 0b0'0001'1111) | 0b0'1110'0000);
-        *out++ = c0;
-        *out++ = c1;
-        *out++ = c2;
+        *out++ = char8_t(((c >> 12) & 0b0'0001'1111) | 0b0'1110'0000);
+        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
+        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
     }
     else {
-        auto c3 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c2 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c1 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c0 = char8_t((c & 0b0'0000'1111) | 0b0'1111'0000);
-        *out++ = c0;
-        *out++ = c1;
-        *out++ = c2;
-        *out++ = c3;
+        *out++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
+        *out++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
+        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
+        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
     }
     return out;
 }
@@ -168,14 +158,11 @@ constexpr auto EncodingUTF32ToUTF16Unsafe(char32_t from, UTF16Iterator out) noex
     auto c = from;
 
     if (c <= 0xffff) {
-        auto t = char16_t(c);
-        *out++ = t;
+        *out++ = char16_t(c);
     }
     else {
-        auto h = char16_t(((c - 0x10000) / 0x400) + 0xd800);
-        auto l = char16_t(((c - 0x10000) & 0x3ff) + 0xdc00);
-        *out++ = h;
-        *out++ = l;
+        *out++ = char16_t(((c - 0x10000) / 0x400) + 0xd800);
+        *out++ = char16_t(((c - 0x10000) & 0x3ff) + 0xdc00);
     }
     return out;
 }
