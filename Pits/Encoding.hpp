@@ -58,113 +58,59 @@ constexpr auto ReplacementIfEncodingError(char32_t from) -> char32_t
 }
 
 /**
- * @brief UTF32 コードを UTF8 へ変換する 事前に安全な文字で有るか確認する事
- * 
- * @param from UTF32 コード
- * @return [0] 常にデータあり / [1～] != 0 ならデータ有り
+ * @brief UTF32 を UTF8 に変換する
+ *
+ * @param begin 読み込み開始位置
+ * @param end 読み込み終了位置
+ * @param to 出力位置
+ *
+ * @return 移動後の begin, to
  */
-constexpr auto EncodingUTF32ToUTF8Unsafe(char32_t from) -> std::array<char8_t, 4>
-{
-    auto c = from;
-
-    if (c <= 0x7f) {
-        auto c0 = char8_t(c);
-        return {c0};
-    }
-    else if (c <= 0x7ff) {
-        auto c1 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c0 = char8_t((c & 0b0'0011'1111) | 0b0'1100'0000);
-        return {c0, c1};
-    }
-    else if (c <= 0xffff) {
-        auto c2 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c1 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c0 = char8_t((c & 0b0'0001'1111) | 0b0'1110'0000);
-        return {c0, c1, c2};
-    }
-    else {
-        auto c3 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c2 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c1 = char8_t((c & 0b0'0011'1111) | 0b0'1000'0000); c >>= 6;
-        auto c0 = char8_t((c & 0b0'0000'1111) | 0b0'1111'0000);
-        return {c0, c1, c2, c3};
-    }
-}
-
-/**
- * @brief UTF32 コードを UTF8 へ変換する 事前に安全な文字で有るか確認する事
- * @param from UTF32 コード
- * @param out 出力イテレーター
- * @return 移動した出力イテレーター
- */
-template <class UTF8Iterator,
-    class Require = typename std::iterator_traits<UTF8Iterator>::value_type
+template <class UTF32InIter, class UTF8Inserter,
+    class = typename std::iterator_traits<UTF32InIter>::value_type,
+    class = typename std::iterator_traits<UTF8Inserter>::value_type
 >
-constexpr auto EncodingUTF32ToUTF8Unsafe(char32_t from, UTF8Iterator out) -> UTF8Iterator
+constexpr auto EncodingUTF32ToUTF8(UTF32InIter begin, UTF32InIter end, UTF8Inserter to) noexcept
+    -> std::pair<UTF32InIter, UTF8Inserter>
 {
-    auto c = from;
+    auto it = begin;
+    while (it != end) {
+        auto c = char32_t(*it++);
+        auto safe = Unicode::IsSafeCharacter(c) ? c : Unicode::ReplacementCharacter;
 
-    if (c <= 0x7f) {
-        *out++ = char8_t(c);
+        // UTF8 化
+        auto to8 = Unicode::ConvertUTF32ToUTF8(&safe, to);
+        to = std::get<1>(to8);
     }
-    else if (c <= 0x7ff) {
-        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1100'0000);
-        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
-    }
-    else if (c <= 0xffff) {
-        *out++ = char8_t(((c >> 12) & 0b0'0001'1111) | 0b0'1110'0000);
-        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
-        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
-    }
-    else {
-        *out++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
-        *out++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
-        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
-        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
-    }
-    return out;
+    return {it, to};
 }
 
 /**
- * @brief UTF32 文字を UTF16 へ変換する 事前に安全な文字で有るか確認する事
- * @param from UTF32 コード
- * @return [0] 常にデータあり / [1] != 0 ならデータ有り
+ * @brief UTF32 を UTF16 に変換する
+ *
+ * @param begin 読み込み開始位置
+ * @param end 読み込み終了位置
+ * @param to 出力位置
+ *
+ * @return 移動後の begin, to
  */
-constexpr auto EncodingUTF32ToUTF16Unsafe(char32_t from) noexcept -> std::array<char16_t, 2>
-{
-    auto c = from;
-
-    if (c <= 0xffff) {
-        return {char16_t(c)};
-    }
-    else {
-        auto h = char16_t(((c - 0x10000) / 0x400) + 0xd800);
-        auto l = char16_t(((c - 0x10000) & 0x3ff) + 0xdc00);
-        return {h, l};
-    }
-}
-
-/**
- * @brief UTF32 コードを UTF16 へ変換する 事前に安全な文字で有るか確認する事
- * @param from UTF32 コード
- * @param out 出力イテレーター
- * @return 移動した出力イテレーター
- */
-template <class UTF16Iterator,
-    class Require = typename std::iterator_traits<UTF16Iterator>::value_type
+template <class UTF32InIter, class UTF16Inserter,
+    class = typename std::iterator_traits<UTF32InIter>::value_type,
+    class = typename std::iterator_traits<UTF16Inserter>::value_type
 >
-constexpr auto EncodingUTF32ToUTF16Unsafe(char32_t from, UTF16Iterator out) noexcept -> UTF16Iterator
+constexpr auto EncodingUTF32ToUTF16(UTF32InIter begin, UTF32InIter end, UTF16Inserter to) noexcept
+    -> std::pair<UTF32InIter, UTF16Inserter>
 {
-    auto c = from;
+    auto it = begin;
+    while (it != end) {
+        auto c = char32_t(*it++);
+        auto safe = Unicode::IsSafeCharacter(c) ? c : Unicode::ReplacementCharacter;
 
-    if (c <= 0xffff) {
-        *out++ = char16_t(c);
+        // UTF16 化
+        auto to16 = Unicode::ConvertUTF32ToUTF16(&safe, to);
+        to = std::get<1>(to16);
     }
-    else {
-        *out++ = char16_t(((c - 0x10000) / 0x400) + 0xd800);
-        *out++ = char16_t(((c - 0x10000) & 0x3ff) + 0xdc00);
-    }
-    return out;
+    return {it, to};
 }
 
 /**
@@ -178,17 +124,17 @@ constexpr auto EncodingUTF32ToUTF16Unsafe(char32_t from, UTF16Iterator out) noex
  * @return 文字, 移動後イテレータ をペアで返す
  */
 template <class UTF8Iterator,
-    class Require = typename std::iterator_traits<UTF8Iterator>::value_type
+    class = typename std::iterator_traits<UTF8Iterator>::value_type
 >
 constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8Iterator()) noexcept
-    -> std::pair<char32_t, UTF8Iterator>
+    -> std::pair<UTF8Iterator, char32_t>
 {
     auto it = begin;
 
     // シングルコードの確認
     auto c = char32_t(*it++ & 0xff);
     if (c < 0b0'1000'0000) {        //  0 ～ 7f 0 ～ 7f 7
-        return {c, it};
+        return {it, c};
     }
 
     auto min = char32_t {};
@@ -196,7 +142,7 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
 
     /**/ if (c < 0b0'1100'0000) {   // 80 ～ bf
         // 読み込みコードポイント毎に置き換え
-        return {EncodingErrorIllegalSequence, it};
+        return {it, EncodingErrorIllegalSequence};
     }
     else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6 
         c &= 0b0'0001'1111;
@@ -215,7 +161,7 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
     }
     else {
         // 読み込みコードポイント毎に置き換え
-        return {EncodingErrorIllegalSequence, it};
+        return {it, EncodingErrorIllegalSequence};
     }
 
     // マルチバイト後続確認
@@ -223,7 +169,7 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
 
         // 中途で終了か
         if (it == end) {
-            return {EncodingErrorNotEnough, ++begin};
+            return {++begin, EncodingErrorNotEnough};
         }
 
         // 後続データか
@@ -238,21 +184,52 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
 
             // 不正コードなら読み込みコードポイント毎に置き換え
             if (c < min || Unicode::IsUnsafeCharacter(c)) {
-                return {EncodingErrorIllegalSequence, ++begin};
+                return {++begin, EncodingErrorIllegalSequence};
             }
 
             // 進めたコードポイント範囲を置き換え
-            return {EncodingErrorIllegalSequence, it};
+            return {it, EncodingErrorIllegalSequence};
         }
     }
 
     // 不正コードなら読み込みコードポイント毎に置き換え
     if (c < min || Unicode::IsUnsafeCharacter(c)) {
-        return {EncodingErrorIllegalSequence, ++begin};
+        return {++begin, EncodingErrorIllegalSequence};
     }
 
     // 成功
-    return {c, it};
+    return {it, c};
+}
+
+/**
+ * @brief UTF8 を UTF32 に変換する
+ *
+ * @param begin 読み込み開始位置
+ * @param end 読み込み終了位置
+ * @param to 出力位置
+ *
+ * @return 移動後の begin, to
+ */
+template <class UTF8InIter, class UTF32Inserter,
+    class = typename std::iterator_traits<UTF8InIter>::value_type,
+    class = typename std::iterator_traits<UTF32Inserter>::value_type
+>
+constexpr auto EncodingUTF8ToUTF32(UTF8InIter begin, UTF8InIter end, UTF32Inserter to) noexcept
+-> std::pair<UTF8InIter, UTF32Inserter>
+{
+    auto it = begin;
+    while (it != end) {
+        auto to32 = EncodingUTF8ToUTF32(it, end);
+
+        // シーケンス中途で end なら終える
+        auto c = std::get<1>(to32);
+        if (c == EncodingErrorNotEnough) break;
+        it = std::get<0>(to32);
+        auto safe = ReplacementIfEncodingError(c);
+
+        *to++ = safe;
+    }
+    return {it, to};
 }
 
 /**
@@ -268,10 +245,10 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
  *      文字 > Unicode::CharacterMax ... エラー
  */
 template <class UTF16Iterator,
-    class Require = typename std::iterator_traits<UTF16Iterator>::value_type
+    class = typename std::iterator_traits<UTF16Iterator>::value_type
 >
 constexpr auto EncodingUTF16ToUTF32(UTF16Iterator begin, UTF16Iterator end = UTF16Iterator()) noexcept
-    -> std::pair<char32_t, UTF16Iterator>
+    -> std::pair<UTF16Iterator, char32_t>
 {
     auto it = begin;
 
@@ -281,7 +258,7 @@ constexpr auto EncodingUTF16ToUTF32(UTF16Iterator begin, UTF16Iterator end = UTF
     if (Unicode::IsHighSurrogate(c)) {
 
         if (it == end) {
-            return {EncodingErrorNotEnough, it};
+            return {it, EncodingErrorNotEnough};
         }
 
         // ローサロゲートか
@@ -292,106 +269,49 @@ constexpr auto EncodingUTF16ToUTF32(UTF16Iterator begin, UTF16Iterator end = UTF
         }
         else {
             // 進めたコードポイント範囲を置き換え
-            return {EncodingErrorIllegalSequence, it};
+            return {it, EncodingErrorIllegalSequence};
         }
     }
 
     // 不正コードなら置き換え
     if (Unicode::IsUnsafeCharacter(c)) {
-        return {EncodingErrorIllegalSequence, it};
+        return {it, EncodingErrorIllegalSequence};
     }
 
     // 成功
-    return {c, it};
+    return {it, c};
 }
 
 /**
- * @brief UTF8 を UTF32 に変換する
- * 
+ * @brief UTF16 を UTF32 に変換する
+ *
  * @param begin 読み込み開始位置
  * @param end 読み込み終了位置
- * @param out 出力位置
- * 
- * @return UTF8InIter 進んだ読み込み位置
+ * @param to 出力位置 最大2倍のサイズが必要
+ *
+ * @return 移動後の begin, to
  */
-template <class UTF8InIter, class UTF32Inserter,
-    class Require0 = typename std::iterator_traits<UTF8InIter>::value_type,
-    class Require1 = typename std::iterator_traits<UTF32Inserter>::value_type
+template <class UTF16InIter, class UTF32Inserter,
+    class = typename std::iterator_traits<UTF16InIter>::value_type,
+    class = typename std::iterator_traits<UTF32Inserter>::value_type
 >
-constexpr auto EncodingUTF8ToUTF32(UTF8InIter begin, UTF8InIter end, UTF32Inserter out) -> UTF8InIter
+constexpr auto EncodingUTF16ToUTF32(UTF16InIter begin, UTF16InIter end, UTF32Inserter to) noexcept
+    -> std::pair<UTF16InIter, UTF32Inserter>
 {
     auto it = begin;
     while (it != end) {
 
-        auto to32 = EncodingUTF8ToUTF32(it, end);
-        auto c = std::get<0>(to32);
+        auto to32 = EncodingUTF16ToUTF32(it, end);
 
         // シーケンス中途で end なら終える
+        auto c = std::get<1>(to32);
         if (c == EncodingErrorNotEnough) break;
+        it = std::get<0>(to32);
+        auto safe = ReplacementIfEncodingError(c);
 
-        // 書き込み
-        c = ReplacementIfEncodingError(c);
-        it = std::get<1>(to32);
-        *out++ = c;
+        *to++ = safe;
     }
-    return it;
-}
-
-/**
- * @brief UTF8 を UTF16 に変換する
- * 
- * @param begin 読み込み開始位置
- * @param end 読み込み終了位置
- * @param out 出力位置
- * 
- * @return UTF8InIter 読み進んだ位置
- */
-template <class UTF8InIter, class UTF16Inserter,
-    class Require0 = typename std::iterator_traits<UTF8InIter>::value_type,
-    class Require1 = typename std::iterator_traits<UTF16Inserter>::value_type
->
-constexpr auto EncodingUTF8ToUTF16(UTF8InIter begin, UTF8InIter end, UTF16Inserter out) -> UTF8InIter
-{
-    auto it = begin;
-    while (it != end) {
-
-        // UTF32 を経由する
-        auto to32 = EncodingUTF8ToUTF32(it, end);
-        auto c = std::get<0>(to32);
-
-        // シーケンス中途で end なら終える
-        if (c == EncodingErrorNotEnough) break;
-
-        c = ReplacementIfEncodingError(c);
-        it = std::get<1>(to32);
-
-        // 書き込み
-        out = EncodingUTF32ToUTF16Unsafe(c, out);
-    }
-    return it;
-}
-
-/**
- * @brief UTF32 を UTF8 に変換する
- * 
- * @param begin 読み込み開始位置
- * @param end 読み込み終了位置
- * @param out 出力位置
- * 
- * @return UTF32InIter 読み進んだ位置
- */
-template <class UTF32InIter, class UTF8Inserter,
-    class Require0 = typename std::iterator_traits<UTF32InIter>::value_type,
-    class Require1 = typename std::iterator_traits<UTF8Inserter>::value_type
->
-constexpr auto EncodingUTF32ToUTF8(UTF32InIter begin, UTF32InIter end, UTF8Inserter out) -> UTF32InIter
-{
-    auto it = begin;
-    while (it != end) {
-        auto c = ReplacementIfEncodingError(*it++);
-        out = EncodingUTF32ToUTF8Unsafe(c, out);
-    }
-    return it;
+    return {it, to};
 }
 
 /**
@@ -399,31 +319,69 @@ constexpr auto EncodingUTF32ToUTF8(UTF32InIter begin, UTF32InIter end, UTF8Inser
  * 
  * @param begin 読み込み開始位置
  * @param end 読み込み終了位置
- * @param out 出力位置
+ * @param to 出力位置
  * 
- * @return UTF16InIter 読み進んだ位置
+ * @return 移動後の begin, to
  */
 template <class UTF16InIter, class UTF8Inserter,
-    class Require0 = typename std::iterator_traits<UTF16InIter>::value_type,
-    class Require1 = typename std::iterator_traits<UTF8Inserter>::value_type
+    class = typename std::iterator_traits<UTF16InIter>::value_type,
+    class = typename std::iterator_traits<UTF8Inserter>::value_type
 >
-constexpr auto EncodingUTF16ToUTF8(UTF16InIter begin, UTF16InIter end, UTF8Inserter out) -> UTF16InIter
+constexpr auto EncodingUTF16ToUTF8(UTF16InIter begin, UTF16InIter end, UTF8Inserter to) noexcept
+    -> std::pair<UTF16InIter, UTF8Inserter>
 {
     auto it = begin;
     while (it != end) {
 
-        // UTF32 を経由する
+        // UTF32 化
         auto to32 = EncodingUTF16ToUTF32(it, end);
-        auto c = std::get<0>(to32);
 
         // シーケンス中途で end なら終える
-        if (c == EncodingErrorNotEnough) break;
+        auto c = std::get<1>(to32);
+        if (c == EncodingErrorNotEnough) break;        
+        it = std::get<0>(to32);
+        auto safe = ReplacementIfEncodingError(c);
 
-        c = ReplacementIfEncodingError(c);
-        it = std::get<1>(to32);
-        out = EncodingUTF32ToUTF8Unsafe(c, out);
+        // UTF8 化
+        auto to8 = Unicode::ConvertUTF32ToUTF8(&safe, to);
+        to = std::get<1>(to8);
     }
-    return it;
+    return {it, to};
+}
+
+/**
+ * @brief UTF8 を UTF16 に変換する
+ *
+ * @param begin 読み込み開始位置
+ * @param end 読み込み終了位置
+ * @param to 出力位置 最大2倍のサイズが必要
+ *
+ * @return 移動後の begin, to
+ */
+template <class UTF8InIter, class UTF16Inserter,
+    class = typename std::iterator_traits<UTF8InIter>::value_type,
+    class = typename std::iterator_traits<UTF16Inserter>::value_type
+>
+constexpr auto EncodingUTF8ToUTF16(UTF8InIter begin, UTF8InIter end, UTF16Inserter to) noexcept
+    -> std::pair<UTF8InIter, UTF16Inserter>
+{
+    auto it = begin;
+    while (it != end) {
+
+        // UTF32 化
+        auto to32 = EncodingUTF8ToUTF32(it, end);
+
+        // シーケンス中途で end なら終える
+        auto c = std::get<1>(to32);
+        if (c == EncodingErrorNotEnough) break;
+        it = std::get<0>(to32);
+        auto safe = ReplacementIfEncodingError(c);
+
+        // UTF16 化
+        auto to16 = Unicode::ConvertUTF32ToUTF16(&safe, to);
+        to = std::get<1>(to16);
+    }
+    return {it, to};
 }
 
 /*
