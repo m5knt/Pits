@@ -210,12 +210,6 @@ constexpr auto MaximumUTF32To16(std::size_t from = 1) -> std::size_t
  */
 constexpr auto MaximumUTF8ToUTF32(std::size_t from = 1) -> std::size_t
 {
-    // Name  |  Ranges |  UTF8 | UTF32 | Ratio
-    // ------+---------+-------+-------+-------
-    // UTF8  |      7f |  1(1) | *1(4) | *1/1
-    // UTF8  |     7ff |  2(2) |  1(4) |  1/2
-    // UTF8  |  0'ffff |  3(3) |  1(4) |  1/3 
-    // UTF8  | 1f'ffff |  4(4) |  1(4) |  1/4
     return from;
 }
 
