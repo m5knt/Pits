@@ -38,25 +38,20 @@ namespace Unicode {
  * 
  * ユニコード文字は 10ffff まで
  * 
- * Name  |    Ranges | Size |  UTF8 | UTF16 | UTF32 | Remarks
- * ------+-----------+------+-------+-------+-------+-----------------------------
- * UTF32 |        7f | 1(4) |  1(1) |  1(2) | ----- |
- * UTF32 |       7ff | 1(4) |  2(2) |  1(2) | ----- |
- * UTF32 |    0'ffff | 1(4) |  3(3) |  1(2) | ----- |
- * UTF32 |   1f'ffff | 1(4) | *4(4) | *2(4) | ----- |
- * ------+-----------+------+-------+-------+-------+-----------------------------
- * UTF16 |        7f | 1(2) |  1(1) |  ---- | *1(4) |
- * UTF16 |       7ff | 1(2) |  2(2) |  ---- |  1(4) |
- * UTF16 |    0'ffff | 1(2) | *3(3) |  ---- |  1(4) |
- * UTF16 |   1f'ffff | 2(4) |  4(4) |  ---- |  1(4) |
- * ------+-----------+------+-------+-------+-------+-----------------------------
- * UTF8  |        7f | 1(1) |  ---- | *1(2) | *1(4) |           7 =  7 
- * UTF8  |       7ff | 2(2) |  ---- |  1(2) |  1(4) |         5+6 = 11
- * UTF8  |    0'ffff | 3(3) |  ---- |  1(2) |  1(4) |       4+6+6 = 16
- * UTF8  |   1f'ffff | 4(4) |  ---- |  2(4) |  1(4) |     3+6+6+6 = 21
- * ------+-----------+------+-------+-------+-------+-----------------------------
- * UTF8  |  3ff'ffff | 5(5) |  ---- |  ---- |  ---- |   2+6+6+6+6 = 26 仕様削除
- * UTF8  | 7fff'ffff | 5(5) |  ---- |  ---- |  ---- | 1+6+6+6+6+6 = 31 仕様削除
+ * Name  |    Ranges | Size | Remarks
+ * ------+-----------+------+--------------------------
+ * UTF32 |   1f'ffff | 1(4) | 
+ * ------+-----------+------+--------------------------
+ * UTF16 |    0'ffff | 1(2) | 
+ * UTF16 |   1f'ffff | 2(4) | 
+ * ------+-----------+------+--------------------------
+ * UTF8  |        7f | 1(1) |           7 =  7 
+ * UTF8  |       7ff | 2(2) |         5+6 = 11
+ * UTF8  |    0'ffff | 3(3) |       4+6+6 = 16
+ * UTF8  |   1f'ffff | 4(4) |     3+6+6+6 = 21
+ * ------+-----------+------+--------------------------
+ * UTF8  |  3ff'ffff | 5(5) |   2+6+6+6+6 = 26 仕様削除
+ * UTF8  | 7fff'ffff | 6(6) | 1+6+6+6+6+6 = 31 仕様削除
  * 
  * バイトオーダーマーク BOM
  * 
@@ -80,7 +75,7 @@ namespace Unicode {
  */
 
 /**
- * @addtogroup ユニコード関連定数
+ * @addtogroup ユニコードキャラクタ関連
  * @{
  */
 
@@ -102,19 +97,10 @@ constexpr char32_t ReplacementCharacter = 0xfffd;
 constexpr char32_t CharacterMax = 0x10ffff;
 
 /**
- * @}
+ * @brief サロゲートコードで有るか返す (0xd800 ～ 0xdfff)
+ * @param c 文字
+ * @return 真偽
  */
-
-/**
- * @addtogroup ユニコードキャラクタ判定関数
- * @{
- */
-
- /**
-  * @brief サロゲートコードで有るか返す (0xd800 ～ 0xdfff)
-  * @param c 文字
-  * @return 真偽
-  */
 constexpr auto IsSurrogate(char32_t c) noexcept -> bool
 {
     return (0xd800 <= c) && (c <= 0xdfff);
@@ -175,10 +161,122 @@ constexpr auto IsSafeCharacter(char32_t c) -> bool
  */
 
 /**
+ * @brief UTF32 から UTF8 変換時の最長カウント数を返す
+ * @param from UTF32 コードポイントカウント数
+ * @return UTF8 コードポイントカウント数
+ * 
+ * Name  |  Ranges | UTF32 |  UTF8 | Ratio
+ * ------+---------+-------+-------+-------
+ * UTF32 |      7f |  1(4) |  1(1) |  1/1
+ * UTF32 |     7ff |  1(4) |  2(2) |  2/1
+ * UTF32 |  0'ffff |  1(4) |  3(3) |  3/1
+ * UTF32 | 1f'ffff |  1(4) | *4(4) | *4/1
+ * 
+ */
+constexpr auto MaximumUTF32ToUTF8Max(std::size_t from = 1) -> std::size_t
+{
+    return from * 4;
+}
+
+/**
+ * @brief UTF32 から UTF16 変換時の最長カウント数を返す
+ * @param from UTF32 コードポイントカウント数
+ * @return UTF16 コードポイントカウント数
+ * 
+ * Name  |  Ranges | UTF32 | UTF16 | Ratio
+ * ------+---------+-------+-------+-------
+ * UTF32 |      7f |  1(4) |  1(2) |  1/1
+ * UTF32 |     7ff |  1(4) |  1(2) |  1/1
+ * UTF32 |  0'ffff |  1(4) |  1(2) |  1/1
+ * UTF32 | 1f'ffff |  1(4) | *2(4) | *2/1
+ * 
+ */
+constexpr auto MaximumUTF32To16(std::size_t from = 1) -> std::size_t
+{
+    return from * 2;
+}
+
+/**
+ * @brief UTF8 から UTF32 変換時の最長カウント数を返す
+ * @param from UTF8 コードポイントカウント数
+ * @return UTF32 コードポイントカウント数
+ * 
+ * Name  |  Ranges |  UTF8 | UTF32 | Ratio
+ * ------+---------+-------+-------+-------
+ * UTF8  |      7f |  1(1) | *1(4) | *1/1
+ * UTF8  |     7ff |  2(2) |  1(4) |  1/2
+ * UTF8  |  0'ffff |  3(3) |  1(4) |  1/3 
+ * UTF8  | 1f'ffff |  4(4) |  1(4) |  1/4
+ */
+constexpr auto MaximumUTF8ToUTF32(std::size_t from = 1) -> std::size_t
+{
+    // Name  |  Ranges |  UTF8 | UTF32 | Ratio
+    // ------+---------+-------+-------+-------
+    // UTF8  |      7f |  1(1) | *1(4) | *1/1
+    // UTF8  |     7ff |  2(2) |  1(4) |  1/2
+    // UTF8  |  0'ffff |  3(3) |  1(4) |  1/3 
+    // UTF8  | 1f'ffff |  4(4) |  1(4) |  1/4
+    return from;
+}
+
+/**
+ * @brief UTF16 から UTF32 変換時の最長カウント数を返す
+ * @param from UTF16 コードポイントカウント数
+ * @return UTF32 コードポイントカウント数
+ * 
+ * Name  |  Ranges | UTF16 | UTF32 | Ratio
+ * ------+---------+-------+-------+-------
+ * UTF16 |      7f |  1(2) | *1(4) | *1/1
+ * UTF16 |     7ff |  1(2) |  1(4) |  1/1
+ * UTF16 |  0'ffff |  1(2) |  1(4) |  1/1
+ * UTF16 | 1f'ffff |  2(4) |  1(4) |  1/2
+ */
+constexpr auto MaximumUTF16ToUTF32(std::size_t from = 1) -> std::size_t
+{
+    return from;
+}
+
+/**
+ * @brief UTF16 から UTF8 変換時の最長カウント数を返す
+ * @param from UTF16 コードポイントカウント数
+ * @return UTF8 コードポイントカウント数
+ * 
+ * Name  |  Ranges | UTF16 |  UTF8 | Ratio
+ * ------+---------+-------+-------+-------
+ * UTF16 |      7f |  1(2) | *1(1) | *1/1
+ * UTF16 |     7ff |  1(2) |  2(2) |  2/1
+ * UTF16 |  0'ffff |  1(2) |  3(3) |  3/1
+ * UTF16 | 1f'ffff |  2(4) |  4(4) |  4/2
+ * 
+ */
+constexpr auto MaximumUTF16ToUTF8(std::size_t from = 1) -> std::size_t
+{
+    return from * 3;
+}
+
+/**
+ * @brief UTF8 から UTF16 変換時の最長カウント数を返す
+ * @param from UTF8 コードポイントカウント数
+ * @return UTF16 コードポイントカウント数
+ * 
+ * Name  |  Ranges |  UTF8 | UTF16 | Ratio
+ * ------+---------+-------+-------+-------
+ * UTF8  |      7f |  1(1) | *1(2) | *1/1
+ * UTF8  |     7ff |  2(2) |  1(2) |  1/2
+ * UTF8  |  0'ffff |  3(3) |  1(2) |  1/3
+ * UTF8  | 1f'ffff |  4(4) |  2(4) |  2/4
+ * 
+ */
+constexpr auto MaximumUTF8ToUTF16(std::size_t from = 1) -> std::size_t
+{
+    return from;
+}
+
+/**
  * @brief UTF32 を UTF8 へ1文字変換する
  * @param from UTF32 コード 正しいエンコーディングである事 (1 動く)
  * @param out UTF8 出力イテレーター (1 ～ 4 動く)
- * @return 移動したout
+ * @return 移動後の from と to
  */
 template <class UTF32Iterator, class UTF8Iterator,
     class = typename std::iterator_traits<UTF32Iterator>::value_type,
