@@ -54,9 +54,9 @@ int main() {
     static_assert(Pits::Unicode::IsNotCharacter(U'\U0000fffe'));
     static_assert(Pits::Unicode::IsNotCharacter(U'\U0000ffff'));
     static_assert(Pits::Unicode::IsNotCharacter(U'\U0001ffff'));
-    static_assert(Pits::Unicode::IsUnsafeCharacter(U'\U0000d800'));
-    static_assert(Pits::Unicode::IsUnsafeCharacter(U'\U0000ffff'));
-    static_assert(Pits::Unicode::IsUnsafeCharacter(U'\U00110000'));
+    static_assert(Pits::Unicode::IsUnsafeCharacter(U'\x0000d800'));
+    static_assert(Pits::Unicode::IsUnsafeCharacter(U'\x0000ffff'));
+    static_assert(Pits::Unicode::IsUnsafeCharacter(U'\x00110000'));
 
     {
         auto from = U"𐐷漢字😀";
