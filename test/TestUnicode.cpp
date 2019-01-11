@@ -8,34 +8,6 @@
 
 using namespace std::literals;
 
-template <class UTF8Iterator,
-    class Require = typename std::iterator_traits<UTF8Iterator>::value_type
->
-constexpr auto EncodingUTF32ToUTF8Unsafe2(char32_t from, UTF8Iterator out) -> UTF8Iterator
-{
-    auto c = from;
-
-    if (c <= 0x7f) {
-        *out++ = char8_t(c);
-    }
-    else if (c <= 0x7ff) {
-        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1100'0000);
-        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
-    }
-    else if (c <= 0xffff) {
-        *out++ = char8_t(((c >> 12) & 0b0'0001'1111) | 0b0'1110'0000);
-        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
-        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
-    }
-    else {
-        *out++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
-        *out++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
-        *out++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
-        *out++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
-    }
-    return out;
-}
-
 template <class Job>
 void Bench(Job job) {
     Pits::Timer begin;
