@@ -107,7 +107,7 @@ constexpr char32_t CharacterMax = 0x10ffff;
  * @param c 文字
  * @return 真偽
  */
-constexpr auto IsNoncharacters(char32_t c) noexcept -> bool
+constexpr auto IsNotCharacter(char32_t c) noexcept -> bool
 {
     return (c & 0xfffe) == 0xfffe;
 }
@@ -147,9 +147,9 @@ constexpr auto IsLowSurrogate(char32_t c) noexcept -> bool
  * @param c 文字
  * @return bool 真偽
  */
-constexpr auto IsUnsafeUTF32(char32_t c) -> bool
+constexpr auto IsUnsafeCharacter(char32_t c) -> bool
 {
-    return (CharacterMax < c) || IsSurrogate(c) || IsNoncharacters(c);
+    return (CharacterMax < c) || IsSurrogate(c) || IsNotCharacter(c);
 }
 
 /**
@@ -157,9 +157,9 @@ constexpr auto IsUnsafeUTF32(char32_t c) -> bool
  * @param c 文字
  * @return bool 真偽
  */
-constexpr auto IsSafeUTF32(char32_t c) -> bool
+constexpr auto IsSafeCharacter(char32_t c) -> bool
 {
-    return !IsUnsafeUTF32(c);    
+    return !IsUnsafeCharacter(c);    
 }
 
 /**
@@ -194,6 +194,7 @@ constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to) noexcept 
         *to++ = char8_t(((c >> 0) & 0b0'0011'1111) | 0b0'1000'0000);
     }
     else {
+        // 範囲外コードの時もここに来る
         *to++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
         *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 6) & 0b0'0011'1111) | 0b0'1000'0000);
@@ -222,6 +223,7 @@ constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to) noexcep
         *to++ = char16_t(c);
     }
     else {
+        // 範囲外コードの時もここに来る
         *to++ = char16_t(((c - 0x10000) / 0x400) + 0xd800);
         *to++ = char16_t(((c - 0x10000) % 0x400) + 0xdc00);
     }
@@ -242,12 +244,13 @@ template <class UTF8Iterator, class UTF32Iterator,
 constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
     -> std::pair<UTF8Iterator, UTF32Iterator>
 {
-    auto c = char32_t(*from++ & 0xff);
+    auto c = char32_t(char8_t(*from++));
 
     /**/ if (c < 0b0'1000'0000) {   //  0 ～ 7f 0 ～ 7f 7
         static_cast<void>(nullptr);
     }
     else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6 
+        // 後続コードの時もここに来る
         c = (c & 0b0'0001'1111) << 6;
         c = c | (*from++ & 0b0'0011'1111);
     }
@@ -256,7 +259,8 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
         c = c | ((*from++ & 0b0'0011'1111) << 6);
         c = c | ((*from++ & 0b0'0011'1111) << 0);
     }
-    else if (c < 0b0'1111'1000) {   // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
+    else {                         // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
+        // 範囲外コードの時もここに来る
         c = (c & 0b0'0000'0111) << 18;
         c = c | ((*from++ & 0b0'0011'1111) << 12);
         c = c | ((*from++ & 0b0'0011'1111) << 6);
@@ -280,9 +284,10 @@ template <class UTF16Iterator, class UTF32Iterator,
 constexpr auto ConvertUTF16ToUTF32(UTF16Iterator from, UTF32Iterator to) noexcept
     -> std::pair<UTF16Iterator, UTF32Iterator>
 {
-    auto c = char32_t(*from++);
+    auto c = char32_t(char16_t(*from++));
 
     if ((0xd800 <= c) && (c <= 0xdbff)) {
+        // 範囲外コードの時もここに来る
         c = 0x10000 | ((c - 0xd800) * 0x400) | (*from++ & 0x3ff);
     }
 

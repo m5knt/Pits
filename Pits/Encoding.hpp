@@ -237,7 +237,7 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
             for (; req; --req) c <<= 6;
 
             // 不正コードなら読み込みコードポイント毎に置き換え
-            if (c < min || Unicode::IsUnsafeUTF32(c)) {
+            if (c < min || Unicode::IsUnsafeCharacter(c)) {
                 return {EncodingErrorIllegalSequence, ++begin};
             }
 
@@ -247,7 +247,7 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
     }
 
     // 不正コードなら読み込みコードポイント毎に置き換え
-    if (c < min || Unicode::IsUnsafeUTF32(c)) {
+    if (c < min || Unicode::IsUnsafeCharacter(c)) {
         return {EncodingErrorIllegalSequence, ++begin};
     }
 
@@ -297,7 +297,7 @@ constexpr auto EncodingUTF16ToUTF32(UTF16Iterator begin, UTF16Iterator end = UTF
     }
 
     // 不正コードなら置き換え
-    if (Unicode::IsUnsafeUTF32(c)) {
+    if (Unicode::IsUnsafeCharacter(c)) {
         return {EncodingErrorIllegalSequence, it};
     }
 
