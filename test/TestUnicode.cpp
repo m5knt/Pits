@@ -53,7 +53,7 @@ int main() {
     static_assert(Pits::Unicode::IsLowSurrogate(u"𐐷"[1]));
     {
         auto from = U"𐐷漢字";
-        char8_t to[13] = {};
+        char8_t to[100] = {};
         auto f = from;
         auto t = to;
         std::tie(f, t) = Pits::Unicode::ConvertUTF32ToUTF8(f, t);
@@ -63,7 +63,7 @@ int main() {
     }
     {
         auto from = U"𐐷漢字";
-        char16_t to[13] = {};
+        char16_t to[100] = {};
         auto f = from;
         auto t = to;
         std::tie(f, t) = Pits::Unicode::ConvertUTF32ToUTF16(f, t);
@@ -73,7 +73,7 @@ int main() {
     }
     {
         auto from = u8"𐐷漢字";
-        char32_t to[13] = {};
+        char32_t to[100] = {};
         auto f = from;
         auto t = to;
         std::tie(f, t) = Pits::Unicode::ConvertUTF8ToUTF32(f, t);
@@ -90,6 +90,26 @@ int main() {
         std::tie(f, t) = Pits::Unicode::ConvertUTF16ToUTF32(f, t);
         std::tie(f, t) = Pits::Unicode::ConvertUTF16ToUTF32(f, t);
         assert(to == U"𐐷漢字"sv);
+    }
+    {
+        auto from = u8"𐐷漢字";
+        char16_t to[100] = {};
+        auto f = from;
+        auto t = to;
+        std::tie(f, t) = Pits::Unicode::ConvertUTF8ToUTF16(f, t);
+        std::tie(f, t) = Pits::Unicode::ConvertUTF8ToUTF16(f, t);
+        std::tie(f, t) = Pits::Unicode::ConvertUTF8ToUTF16(f, t);
+        assert(to == u"𐐷漢字"sv);
+    }
+    {
+        auto from = u"𐐷漢字";
+        char8_t to[100] = {};
+        auto f = from;
+        auto t = to;
+        std::tie(f, t) = Pits::Unicode::ConvertUTF16ToUTF8(f, t);
+        std::tie(f, t) = Pits::Unicode::ConvertUTF16ToUTF8(f, t);
+        std::tie(f, t) = Pits::Unicode::ConvertUTF16ToUTF8(f, t);
+        assert(to == u8"𐐷漢字"sv);
     }
 
 #endif

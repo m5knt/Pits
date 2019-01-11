@@ -87,8 +87,16 @@ namespace Unicode {
 /// バイトオーダーマーク
 constexpr char32_t ByteOrderMark = 0xfeff;
 
-/// ユニコード変換失敗時の文字
+// fff9 INTERLINEAR ANNOTATION ANCHOR
+// fffa INTERLINEAR ANNOTATION SEPARATOR
+// fffb INTERLINEAR ANNOTATION TERMINATOR
+// fffc OBJECT REPLACEMENT CHARACTER
+
+/// ユニコード変換失敗時の文字 REPLACEMENT CHARACTER
 constexpr char32_t ReplacementCharacter = 0xfffd;
+
+// fffe not a characte
+// ffff not a characte
 
 /// ユニコード文字の最大値
 constexpr char32_t CharacterMax = 0x10ffff;
@@ -102,28 +110,18 @@ constexpr char32_t CharacterMax = 0x10ffff;
  * @{
  */
 
-/**
- * @brief キャラクタとして扱わないコードであるか返す (0xfffe, 0xffff ... 0x10fffe, 0x10ffff)
- * @param c 文字
- * @return 真偽
- */
-constexpr auto IsNotCharacter(char32_t c) noexcept -> bool
-{
-    return (c & 0xfffe) == 0xfffe;
-}
-
-/**
- * @brief サロゲートコードで有るか返す (0xd800 ～ 0xdfff) 
- * @param c 文字
- * @return 真偽
- */
+ /**
+  * @brief サロゲートコードで有るか返す (0xd800 ～ 0xdfff)
+  * @param c 文字
+  * @return 真偽
+  */
 constexpr auto IsSurrogate(char32_t c) noexcept -> bool
 {
     return (0xd800 <= c) && (c <= 0xdfff);
 }
 
 /**
- * @brief ハイサロゲートコードで有るか返す (0xd800 ～ 0xdbff) 
+ * @brief ハイサロゲートコードで有るか返す (0xd800 ～ 0xdbff)
  * @param c 文字
  * @return bool 真偽
  */
@@ -140,6 +138,16 @@ constexpr auto IsHighSurrogate(char32_t c) noexcept -> bool
 constexpr auto IsLowSurrogate(char32_t c) noexcept -> bool
 {
     return (0xdc00 <= c) && (c <= 0xdfff);
+}
+
+/**
+ * @brief キャラクタとして扱わないコードであるか返す (0xfffe, 0xffff ... 0x10fffe, 0x10ffff)
+ * @param c 文字
+ * @return 真偽
+ */
+constexpr auto IsNotCharacter(char32_t c) noexcept -> bool
+{
+    return (c & 0xfffe) == 0xfffe;
 }
 
 /**
@@ -167,7 +175,7 @@ constexpr auto IsSafeCharacter(char32_t c) -> bool
  */
 
 /**
- * @brief UTF32 を UTF8 へ一文字変換する
+ * @brief UTF32 を UTF8 へ1文字変換する
  * @param from UTF32 コード 正しいエンコーディングである事 (1 動く)
  * @param out UTF8 出力イテレーター (1 ～ 4 動く)
  * @return 移動したout
@@ -194,7 +202,6 @@ constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to) noexcept 
         *to++ = char8_t(((c >> 0) & 0b0'0011'1111) | 0b0'1000'0000);
     }
     else {
-        // 範囲外コードの時もここに来る
         *to++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
         *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 6) & 0b0'0011'1111) | 0b0'1000'0000);
@@ -205,14 +212,14 @@ constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to) noexcept 
 }
 
 /**
- * @brief UTF32 を UTF16 へ一文字変換する
+ * @brief UTF32 を UTF16 へ1文字変換する
  * @param from UTF32 入力イテレータ 正しいエンコーディングである事 (1 動く)
  * @param to UTF16 出力イテレータ (1 ～ 2 動く)
  * @return 移動後の from と to
  */
 template <class UTF16Iterator, class UTF32Iterator,
-    class Require0 = typename std::iterator_traits<UTF32Iterator>::value_type,
-    class Require1 = typename std::iterator_traits<UTF16Iterator>::value_type
+    class = typename std::iterator_traits<UTF32Iterator>::value_type,
+    class = typename std::iterator_traits<UTF16Iterator>::value_type
 >
 constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to) noexcept
     -> std::pair<UTF32Iterator, UTF16Iterator>
@@ -223,7 +230,6 @@ constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to) noexcep
         *to++ = char16_t(c);
     }
     else {
-        // 範囲外コードの時もここに来る
         *to++ = char16_t(((c - 0x10000) / 0x400) + 0xd800);
         *to++ = char16_t(((c - 0x10000) % 0x400) + 0xdc00);
     }
@@ -232,25 +238,24 @@ constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to) noexcep
 }
 
 /**
- * @brief UTF8 を UTF32 へ一文字変換する
+ * @brief UTF8 を UTF32 へ1文字変換する
  * @param from UTF8 入力イテレータ 正しいエンコーディングである事 (1 ～ 4 動く)
  * @param to UTF32 出力イテレータ (1 動く)
  * @return 移動後の from と to
  */
 template <class UTF8Iterator, class UTF32Iterator,
-    class Require0 = typename std::iterator_traits<UTF8Iterator>::value_type,
-    class Require1 = typename std::iterator_traits<UTF32Iterator>::value_type
+    class = typename std::iterator_traits<UTF8Iterator>::value_type,
+    class = typename std::iterator_traits<UTF32Iterator>::value_type
 >
 constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
     -> std::pair<UTF8Iterator, UTF32Iterator>
 {
-    auto c = char32_t(char8_t(*from++));
+    auto c = char32_t(*from++ & 0xff);
 
     /**/ if (c < 0b0'1000'0000) {   //  0 ～ 7f 0 ～ 7f 7
         static_cast<void>(nullptr);
     }
     else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6 
-        // 後続コードの時もここに来る
         c = (c & 0b0'0001'1111) << 6;
         c = c | (*from++ & 0b0'0011'1111);
     }
@@ -260,7 +265,6 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
         c = c | ((*from++ & 0b0'0011'1111) << 0);
     }
     else {                         // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
-        // 範囲外コードの時もここに来る
         c = (c & 0b0'0000'0111) << 18;
         c = c | ((*from++ & 0b0'0011'1111) << 12);
         c = c | ((*from++ & 0b0'0011'1111) << 6);
@@ -272,28 +276,92 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
 }
 
 /**
- * @brief UTF16 を UTF32 へ一文字変換する
+ * @brief UTF16 を UTF32 へ1文字変換する
  * @param from UTF16 入力イテレータ 正しいエンコーディングである事 (1 ～ 2 動く)
  * @param to UTF32 出力イテレータ (1 動く)
  * @return 移動後の from と to
  */
 template <class UTF16Iterator, class UTF32Iterator,
-    class Require0 = typename std::iterator_traits<UTF16Iterator>::value_type,
-    class Require1 = typename std::iterator_traits<UTF32Iterator>::value_type
+    class = typename std::iterator_traits<UTF16Iterator>::value_type,
+    class = typename std::iterator_traits<UTF32Iterator>::value_type
 >
 constexpr auto ConvertUTF16ToUTF32(UTF16Iterator from, UTF32Iterator to) noexcept
     -> std::pair<UTF16Iterator, UTF32Iterator>
 {
-    auto c = char32_t(char16_t(*from++));
+    auto c = char32_t(*from++ & 0xffff);
 
     if ((0xd800 <= c) && (c <= 0xdbff)) {
-        // 範囲外コードの時もここに来る
         c = 0x10000 | ((c - 0xd800) * 0x400) | (*from++ & 0x3ff);
     }
 
     *to++ = c;
     return {from, to};
 }
+
+/**
+ * @brief UTF16 を UTF8 へ1文字変換する
+ * @param from UTF16 入力イテレータ 正しいエンコーディングである事 (1 ～ 2 動く)
+ * @param to UTF8 出力イテレータ (1 ～ 4 動く)
+ * @return 移動後の from と to
+ */
+template <class UTF16Iterator, class UTF8Iterator,
+    class = typename std::iterator_traits<UTF16Iterator>::value_type,
+    class = typename std::iterator_traits<UTF8Iterator>::value_type
+>
+constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to) noexcept
+    -> std::pair<UTF16Iterator, UTF8Iterator>
+{
+    // UTF32化
+    auto c = char32_t(char16_t(*from++));
+    if ((0xd800 <= c) && (c <= 0xdbff)) {
+        c = 0x10000 | ((c - 0xd800) * 0x400) | (*from++ & 0x3ff);
+    }
+
+    // UTF8化
+    auto to8 = ConvertUTF32ToUTF8(&c, to);
+    return {from, std::get<1>(to8)};
+}
+
+/**
+ * @brief UTF8 を UTF16 へ1文字変換する
+ * @param from UTF8 入力イテレータ 正しいエンコーディングである事 (1 ～ 4 動く)
+ * @param to UTF16 出力イテレータ (1 ～ 2 動く)
+ * @return 移動後の from と to
+ */
+template <class UTF8Iterator, class UTF16Iterator,
+    class = typename std::iterator_traits<UTF8Iterator>::value_type,
+    class = typename std::iterator_traits<UTF16Iterator>::value_type
+>
+constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to) noexcept
+    -> std::pair<UTF8Iterator, UTF16Iterator>
+{
+    auto c = char32_t(*from++ & 0xff);
+
+    /**/ if (c < 0b0'1000'0000) {   //  0 ～ 7f 0 ～ 7f 7
+        *to++ = char16_t(c);
+    }
+    else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6 
+        c = (c & 0b0'0001'1111) << 6;
+        c = c | (*from++ & 0b0'0011'1111);
+        *to++ = char16_t(c);
+    }
+    else if (c < 0b0'1111'0000) {   // e0 ～ ef 800 ～ ffff　4+6+6 
+        c = (c & 0b0'0000'1111) << 12;
+        c = c | ((*from++ & 0b0'0011'1111) << 6);
+        c = c | ((*from++ & 0b0'0011'1111) << 0);
+        *to++ = char16_t(c);
+    }
+    else {                         // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
+        c = (c & 0b0'0000'0111) << 18;
+        c = c | ((*from++ & 0b0'0011'1111) << 12);
+        c = c | ((*from++ & 0b0'0011'1111) << 6);
+        c = c | ((*from++ & 0b0'0011'1111) << 0);
+        *to++ = char16_t(((c - 0x10000) / 0x400) + 0xd800);
+        *to++ = char16_t(((c - 0x10000) % 0x400) + 0xdc00);
+    }
+
+    return {from, to};
+};
 
 /*
  *
