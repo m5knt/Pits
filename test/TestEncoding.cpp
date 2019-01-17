@@ -138,8 +138,8 @@ int main() {
         std::u32string u32;
         Pits::EncodingUTF8ToUTF16(sv.begin(), sv.end(), std::inserter(u16, u16.end()));
         Pits::EncodingUTF8ToUTF32(sv.begin(), sv.end(), std::inserter(u32, u32.end()));
-        assert(u16.size() <= Pits::Unicode::MaximumUTF8ToUTF16(sv.size()));
-        assert(u32.size() <= Pits::Unicode::MaximumUTF8ToUTF32(sv.size()));
+        assert(u16.size() <= Pits::Unicode::ReserveUTF8ToUTF16(sv.size()));
+        assert(u32.size() <= Pits::Unicode::ReserveUTF8ToUTF32(sv.size()));
     }
     {
         auto sv = "\xE0\x80\xBF"sv;
@@ -148,8 +148,8 @@ int main() {
         std::u32string u32;
         Pits::EncodingUTF8ToUTF16(sv.begin(), sv.end(), std::inserter(u16, u16.end()));
         Pits::EncodingUTF8ToUTF32(sv.begin(), sv.end(), std::inserter(u32, u32.end()));
-        assert(u16.size() <= Pits::Unicode::MaximumUTF8ToUTF16(sv.size()));
-        assert(u32.size() <= Pits::Unicode::MaximumUTF8ToUTF32(sv.size()));
+        assert(u16.size() <= Pits::Unicode::ReserveUTF8ToUTF16(sv.size()));
+        assert(u32.size() <= Pits::Unicode::ReserveUTF8ToUTF32(sv.size()));
     }
     {
         auto sv = "\xf0\x81\x82\x83"sv;
@@ -158,8 +158,8 @@ int main() {
         std::u32string u32;
         Pits::EncodingUTF8ToUTF16(sv.begin(), sv.end(), std::inserter(u16, u16.end()));
         Pits::EncodingUTF8ToUTF32(sv.begin(), sv.end(), std::inserter(u32, u32.end()));
-        assert(u16.size() <= Pits::Unicode::MaximumUTF8ToUTF16(sv.size()));
-        assert(u32.size() <= Pits::Unicode::MaximumUTF8ToUTF32(sv.size()));
+        assert(u16.size() <= Pits::Unicode::ReserveUTF8ToUTF16(sv.size()));
+        assert(u32.size() <= Pits::Unicode::ReserveUTF8ToUTF32(sv.size()));
     }
 
 #endif

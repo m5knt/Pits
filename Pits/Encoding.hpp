@@ -54,7 +54,7 @@ constexpr char32_t EncodingErrorNotEnough = char32_t(-2);
  */
 constexpr auto ReplacementIfEncodingError(char32_t from) -> char32_t
 {
-    return from < Unicode::CharacterMax ? from : Unicode::ReplacementCharacter;
+    return from <= Unicode::CharacterMax ? from : Unicode::ReplacementCharacter;
 }
 
 /**
@@ -70,7 +70,8 @@ template <class UTF32InIter, class UTF8Inserter,
     class = typename std::iterator_traits<UTF32InIter>::value_type,
     class = typename std::iterator_traits<UTF8Inserter>::value_type
 >
-constexpr auto EncodingUTF32ToUTF8(UTF32InIter begin, UTF32InIter end, UTF8Inserter to) noexcept
+constexpr auto EncodingUTF32ToUTF8(UTF32InIter begin, UTF32InIter end, UTF8Inserter to)
+    noexcept(noexcept(*to++ = char8_t(*begin++)))
     -> std::pair<UTF32InIter, UTF8Inserter>
 {
     auto it = begin;
@@ -98,7 +99,8 @@ template <class UTF32InIter, class UTF16Inserter,
     class = typename std::iterator_traits<UTF32InIter>::value_type,
     class = typename std::iterator_traits<UTF16Inserter>::value_type
 >
-constexpr auto EncodingUTF32ToUTF16(UTF32InIter begin, UTF32InIter end, UTF16Inserter to) noexcept
+constexpr auto EncodingUTF32ToUTF16(UTF32InIter begin, UTF32InIter end, UTF16Inserter to)
+    noexcept(noexcept(*to++ = char16_t(*begin++)))
     -> std::pair<UTF32InIter, UTF16Inserter>
 {
     auto it = begin;
@@ -126,7 +128,8 @@ constexpr auto EncodingUTF32ToUTF16(UTF32InIter begin, UTF32InIter end, UTF16Ins
 template <class UTF8Iterator,
     class = typename std::iterator_traits<UTF8Iterator>::value_type
 >
-constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8Iterator()) noexcept
+constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8Iterator())
+    noexcept(noexcept(*begin++))
     -> std::pair<UTF8Iterator, char32_t>
 {
     auto it = begin;
@@ -210,12 +213,13 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
  *
  * @return 移動後の begin, to
  */
-template <class UTF8InIter, class UTF32Inserter,
-    class = typename std::iterator_traits<UTF8InIter>::value_type,
+template <class UTF8Iterator, class UTF32Inserter,
+    class = typename std::iterator_traits<UTF8Iterator>::value_type,
     class = typename std::iterator_traits<UTF32Inserter>::value_type
 >
-constexpr auto EncodingUTF8ToUTF32(UTF8InIter begin, UTF8InIter end, UTF32Inserter to) noexcept
--> std::pair<UTF8InIter, UTF32Inserter>
+constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end, UTF32Inserter to)
+    noexcept(noexcept(*to++ = char32_t(*begin++)))
+    -> std::pair<UTF8Iterator, UTF32Inserter>
 {
     auto it = begin;
     while (it != end) {
@@ -247,7 +251,8 @@ constexpr auto EncodingUTF8ToUTF32(UTF8InIter begin, UTF8InIter end, UTF32Insert
 template <class UTF16Iterator,
     class = typename std::iterator_traits<UTF16Iterator>::value_type
 >
-constexpr auto EncodingUTF16ToUTF32(UTF16Iterator begin, UTF16Iterator end = UTF16Iterator()) noexcept
+constexpr auto EncodingUTF16ToUTF32(UTF16Iterator begin, UTF16Iterator end = UTF16Iterator())
+    noexcept(noexcept(*begin++))
     -> std::pair<UTF16Iterator, char32_t>
 {
     auto it = begin;
@@ -291,12 +296,13 @@ constexpr auto EncodingUTF16ToUTF32(UTF16Iterator begin, UTF16Iterator end = UTF
  *
  * @return 移動後の begin, to
  */
-template <class UTF16InIter, class UTF32Inserter,
-    class = typename std::iterator_traits<UTF16InIter>::value_type,
+template <class UTF16Iterator, class UTF32Inserter,
+    class = typename std::iterator_traits<UTF16Iterator>::value_type,
     class = typename std::iterator_traits<UTF32Inserter>::value_type
 >
-constexpr auto EncodingUTF16ToUTF32(UTF16InIter begin, UTF16InIter end, UTF32Inserter to) noexcept
-    -> std::pair<UTF16InIter, UTF32Inserter>
+constexpr auto EncodingUTF16ToUTF32(UTF16Iterator begin, UTF16Iterator end, UTF32Inserter to)
+    noexcept(noexcept(*to++ = char32_t(*begin++)))
+    -> std::pair<UTF16Iterator, UTF32Inserter>
 {
     auto it = begin;
     while (it != end) {
@@ -323,12 +329,13 @@ constexpr auto EncodingUTF16ToUTF32(UTF16InIter begin, UTF16InIter end, UTF32Ins
  * 
  * @return 移動後の begin, to
  */
-template <class UTF16InIter, class UTF8Inserter,
-    class = typename std::iterator_traits<UTF16InIter>::value_type,
+template <class UTF16Iterator, class UTF8Inserter,
+    class = typename std::iterator_traits<UTF16Iterator>::value_type,
     class = typename std::iterator_traits<UTF8Inserter>::value_type
 >
-constexpr auto EncodingUTF16ToUTF8(UTF16InIter begin, UTF16InIter end, UTF8Inserter to) noexcept
-    -> std::pair<UTF16InIter, UTF8Inserter>
+constexpr auto EncodingUTF16ToUTF8(UTF16Iterator begin, UTF16Iterator end, UTF8Inserter to)
+    noexcept(noexcept(*to++ = char8_t(*begin++)))
+    -> std::pair<UTF16Iterator, UTF8Inserter>
 {
     auto it = begin;
     while (it != end) {
@@ -358,12 +365,13 @@ constexpr auto EncodingUTF16ToUTF8(UTF16InIter begin, UTF16InIter end, UTF8Inser
  *
  * @return 移動後の begin, to
  */
-template <class UTF8InIter, class UTF16Inserter,
-    class = typename std::iterator_traits<UTF8InIter>::value_type,
+template <class UTF8Iterator, class UTF16Inserter,
+    class = typename std::iterator_traits<UTF8Iterator>::value_type,
     class = typename std::iterator_traits<UTF16Inserter>::value_type
 >
-constexpr auto EncodingUTF8ToUTF16(UTF8InIter begin, UTF8InIter end, UTF16Inserter to) noexcept
-    -> std::pair<UTF8InIter, UTF16Inserter>
+constexpr auto EncodingUTF8ToUTF16(UTF8Iterator begin, UTF8Iterator end, UTF16Inserter to)
+    noexcept(noexcept(*to++ = char16_t(*begin++)))
+    -> std::pair<UTF8Iterator, UTF16Inserter>
 {
     auto it = begin;
     while (it != end) {
