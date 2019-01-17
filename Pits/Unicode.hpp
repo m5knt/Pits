@@ -410,7 +410,7 @@ constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to)
     -> std::pair<UTF16Iterator, UTF8Iterator>
 {
     // UTF32化
-    auto c = char32_t(char16_t(*from++));
+    auto c = char32_t(*from++ & 0xffff);
     if ((0xd800 <= c) && (c <= 0xdbff)) {
         c = 0x10000 | ((c - 0xd800) * 0x400) | (*from++ & 0x3ff);
     }
