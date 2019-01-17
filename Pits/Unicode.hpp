@@ -90,8 +90,8 @@ constexpr char32_t ByteOrderMark = 0xfeff;
 /// ユニコード変換失敗時の文字 REPLACEMENT CHARACTER
 constexpr char32_t ReplacementCharacter = 0xfffd;
 
-// fffe not a characte
-// ffff not a characte
+// fffe NOT A CHARACTER
+// ffff NOT A CHARACTER
 
 /// ユニコード文字の最大値
 constexpr char32_t CharacterMax = 0x10ffff;
@@ -165,15 +165,15 @@ constexpr auto IsSafeCharacter(char32_t c) -> bool
  * @param from UTF32 コードポイントカウント数
  * @return UTF8 コードポイントカウント数
  * 
- * Name  |  Ranges | UTF32 |  UTF8 | Ratio
- * ------+---------+-------+-------+-------
- * UTF32 |      7f |  1(4) |  1(1) |  1/1
- * UTF32 |     7ff |  1(4) |  2(2) |  2/1
- * UTF32 |  0'ffff |  1(4) |  3(3) |  3/1
- * UTF32 | 1f'ffff |  1(4) | *4(4) | *4/1
+ * Name  |  Ranges | UTF32 |  UTF8 | Ratio | Remarks
+ * ------+---------+-------+-------+-------+---------
+ * UTF32 |      7f |  1(4) |  1(1) |  1/1  |
+ * UTF32 |     7ff |  1(4) |  2(2) |  2/1  |
+ * UTF32 |  0'ffff |  1(4) |  3(3) |  3/1  |
+ * UTF32 | 1f'ffff |  1(4) | *4(4) | *4/1  |
  * 
  */
-constexpr auto MaximumUTF32ToUTF8Max(std::size_t from = 1) -> std::size_t
+constexpr auto ReserveUTF32ToUTF8(std::size_t from = 1) -> std::size_t
 {
     return from * 4;
 }
@@ -183,15 +183,15 @@ constexpr auto MaximumUTF32ToUTF8Max(std::size_t from = 1) -> std::size_t
  * @param from UTF32 コードポイントカウント数
  * @return UTF16 コードポイントカウント数
  * 
- * Name  |  Ranges | UTF32 | UTF16 | Ratio
- * ------+---------+-------+-------+-------
- * UTF32 |      7f |  1(4) |  1(2) |  1/1
- * UTF32 |     7ff |  1(4) |  1(2) |  1/1
- * UTF32 |  0'ffff |  1(4) |  1(2) |  1/1
- * UTF32 | 1f'ffff |  1(4) | *2(4) | *2/1
+ * Name  |  Ranges | UTF32 | UTF16 | Ratio | Remarks
+ * ------+---------+-------+-------+-------+---------
+ * UTF32 |      7f |  1(4) |  1(2) |  1/1  |
+ * UTF32 |     7ff |  1(4) |  1(2) |  1/1  |
+ * UTF32 |  0'ffff |  1(4) |  1(2) |  1/1  |
+ * UTF32 | 1f'ffff |  1(4) | *2(4) | *2/1  |
  * 
  */
-constexpr auto MaximumUTF32To16(std::size_t from = 1) -> std::size_t
+constexpr auto ReserveUTF32To16(std::size_t from = 1) -> std::size_t
 {
     return from * 2;
 }
@@ -201,14 +201,15 @@ constexpr auto MaximumUTF32To16(std::size_t from = 1) -> std::size_t
  * @param from UTF8 コードポイントカウント数
  * @return UTF32 コードポイントカウント数
  * 
- * Name  |  Ranges |  UTF8 | UTF32 | Ratio
- * ------+---------+-------+-------+-------
- * UTF8  |      7f |  1(1) | *1(4) | *1/1
- * UTF8  |     7ff |  2(2) |  1(4) |  1/2
- * UTF8  |  0'ffff |  3(3) |  1(4) |  1/3 
- * UTF8  | 1f'ffff |  4(4) |  1(4) |  1/4
+ * Name  |  Ranges |  UTF8 | UTF32 | Ratio | Remarks
+ * ------+---------+-------+-------+-------+---------
+ * UTF8  |      7f |  1(1) | *1(4) | *1/1  |
+ * UTF8  |     7ff |  2(2) |  1(4) |  1/2  |
+ * UTF8  |  0'ffff |  3(3) |  1(4) |  1/3  |
+ * UTF8  | 1f'ffff |  4(4) |  1(4) |  1/4  |
+ * 
  */
-constexpr auto MaximumUTF8ToUTF32(std::size_t from = 1) -> std::size_t
+constexpr auto ReserveUTF8ToUTF32(std::size_t from = 1) -> std::size_t
 {
     return from;
 }
@@ -218,14 +219,14 @@ constexpr auto MaximumUTF8ToUTF32(std::size_t from = 1) -> std::size_t
  * @param from UTF16 コードポイントカウント数
  * @return UTF32 コードポイントカウント数
  * 
- * Name  |  Ranges | UTF16 | UTF32 | Ratio
- * ------+---------+-------+-------+-------
- * UTF16 |      7f |  1(2) | *1(4) | *1/1
- * UTF16 |     7ff |  1(2) |  1(4) |  1/1
- * UTF16 |  0'ffff |  1(2) |  1(4) |  1/1
- * UTF16 | 1f'ffff |  2(4) |  1(4) |  1/2
+ * Name  |  Ranges | UTF16 | UTF32 | Ratio | Remarks
+ * ------+---------+-------+-------+-------+---------
+ * UTF16 |      7f |  1(2) | *1(4) | *1/1  |
+ * UTF16 |     7ff |  1(2) |  1(4) |  1/1  |
+ * UTF16 |  0'ffff |  1(2) |  1(4) |  1/1  |
+ * UTF16 | 1f'ffff |  2(4) |  1(4) |  1/2  |
  */
-constexpr auto MaximumUTF16ToUTF32(std::size_t from = 1) -> std::size_t
+constexpr auto ReserveUTF16ToUTF32(std::size_t from = 1) -> std::size_t
 {
     return from;
 }
@@ -235,15 +236,15 @@ constexpr auto MaximumUTF16ToUTF32(std::size_t from = 1) -> std::size_t
  * @param from UTF16 コードポイントカウント数
  * @return UTF8 コードポイントカウント数
  * 
- * Name  |  Ranges | UTF16 |  UTF8 | Ratio
- * ------+---------+-------+-------+-------
- * UTF16 |      7f |  1(2) | *1(1) | *1/1
- * UTF16 |     7ff |  1(2) |  2(2) |  2/1
- * UTF16 |  0'ffff |  1(2) |  3(3) |  3/1
- * UTF16 | 1f'ffff |  2(4) |  4(4) |  4/2
+ * Name  |  Ranges | UTF16 |  UTF8 | Ratio | Remarks
+ * ------+---------+-------+-------+-------+---------
+ * UTF16 |      7f |  1(2) | *1(1) | *1/1  |
+ * UTF16 |     7ff |  1(2) |  2(2) |  2/1  |
+ * UTF16 |  0'ffff |  1(2) |  3(3) |  3/1  |
+ * UTF16 | 1f'ffff |  2(4) |  4(4) |  4/2  |
  * 
  */
-constexpr auto MaximumUTF16ToUTF8(std::size_t from = 1) -> std::size_t
+constexpr auto ReserveUTF16ToUTF8(std::size_t from = 1) -> std::size_t
 {
     return from * 3;
 }
@@ -253,15 +254,15 @@ constexpr auto MaximumUTF16ToUTF8(std::size_t from = 1) -> std::size_t
  * @param from UTF8 コードポイントカウント数
  * @return UTF16 コードポイントカウント数
  * 
- * Name  |  Ranges |  UTF8 | UTF16 | Ratio
- * ------+---------+-------+-------+-------
- * UTF8  |      7f |  1(1) | *1(2) | *1/1
- * UTF8  |     7ff |  2(2) |  1(2) |  1/2
- * UTF8  |  0'ffff |  3(3) |  1(2) |  1/3
- * UTF8  | 1f'ffff |  4(4) |  2(4) |  2/4
+ * Name  |  Ranges |  UTF8 | UTF16 | Ratio | Remarks
+ * ------+---------+-------+-------+-------+---------
+ * UTF8  |      7f |  1(1) | *1(2) | *1/1  |
+ * UTF8  |     7ff |  2(2) |  1(2) |  1/2  |
+ * UTF8  |  0'ffff |  3(3) |  1(2) |  1/3  |
+ * UTF8  | 1f'ffff |  4(4) |  2(4) |  2/4  |
  * 
  */
-constexpr auto MaximumUTF8ToUTF16(std::size_t from = 1) -> std::size_t
+constexpr auto ReserveUTF8ToUTF16(std::size_t from = 1) -> std::size_t
 {
     return from;
 }
@@ -276,8 +277,9 @@ template <class UTF32Iterator, class UTF8Iterator,
     class = typename std::iterator_traits<UTF32Iterator>::value_type,
     class = typename std::iterator_traits<UTF8Iterator>::value_type
 >
-constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to) noexcept ->
-    std::pair<UTF32Iterator, UTF8Iterator>
+constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to)
+    noexcept(noexcept(*to++ = char8_t(*from++)))
+    -> std::pair<UTF32Iterator, UTF8Iterator>
 {
     auto c = char32_t(*from++);
 
@@ -313,7 +315,8 @@ template <class UTF16Iterator, class UTF32Iterator,
     class = typename std::iterator_traits<UTF32Iterator>::value_type,
     class = typename std::iterator_traits<UTF16Iterator>::value_type
 >
-constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to) noexcept
+constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to)
+    noexcept(noexcept(*to++ = char16_t(*from++)))
     -> std::pair<UTF32Iterator, UTF16Iterator>
 {
     auto c = char32_t(*from++);
@@ -339,7 +342,8 @@ template <class UTF8Iterator, class UTF32Iterator,
     class = typename std::iterator_traits<UTF8Iterator>::value_type,
     class = typename std::iterator_traits<UTF32Iterator>::value_type
 >
-constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
+constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to)
+    noexcept(noexcept(*to++ = char32_t(*from++)))
     -> std::pair<UTF8Iterator, UTF32Iterator>
 {
     auto c = char32_t(*from++ & 0xff);
@@ -347,7 +351,7 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
     /**/ if (c < 0b0'1000'0000) {   //  0 ～ 7f 0 ～ 7f 7
         static_cast<void>(nullptr);
     }
-    else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6 
+    else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6
         c = (c & 0b0'0001'1111) << 6;
         c = c | (*from++ & 0b0'0011'1111);
     }
@@ -356,7 +360,7 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to) noexcept
         c = c | ((*from++ & 0b0'0011'1111) << 6);
         c = c | ((*from++ & 0b0'0011'1111) << 0);
     }
-    else {                         // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
+    else {                          // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
         c = (c & 0b0'0000'0111) << 18;
         c = c | ((*from++ & 0b0'0011'1111) << 12);
         c = c | ((*from++ & 0b0'0011'1111) << 6);
@@ -377,7 +381,8 @@ template <class UTF16Iterator, class UTF32Iterator,
     class = typename std::iterator_traits<UTF16Iterator>::value_type,
     class = typename std::iterator_traits<UTF32Iterator>::value_type
 >
-constexpr auto ConvertUTF16ToUTF32(UTF16Iterator from, UTF32Iterator to) noexcept
+constexpr auto ConvertUTF16ToUTF32(UTF16Iterator from, UTF32Iterator to)
+    noexcept(noexcept(*to++ = char32_t(*from++)))
     -> std::pair<UTF16Iterator, UTF32Iterator>
 {
     auto c = char32_t(*from++ & 0xffff);
@@ -400,7 +405,8 @@ template <class UTF16Iterator, class UTF8Iterator,
     class = typename std::iterator_traits<UTF16Iterator>::value_type,
     class = typename std::iterator_traits<UTF8Iterator>::value_type
 >
-constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to) noexcept
+constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to)
+    noexcept(noexcept(*to++ = char8_t(*from++)))
     -> std::pair<UTF16Iterator, UTF8Iterator>
 {
     // UTF32化
@@ -424,7 +430,8 @@ template <class UTF8Iterator, class UTF16Iterator,
     class = typename std::iterator_traits<UTF8Iterator>::value_type,
     class = typename std::iterator_traits<UTF16Iterator>::value_type
 >
-constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to) noexcept
+constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to)
+    noexcept(noexcept(*to++ = char16_t(*from++)))
     -> std::pair<UTF8Iterator, UTF16Iterator>
 {
     auto c = char32_t(*from++ & 0xff);
@@ -443,7 +450,7 @@ constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to) noexcept
         c = c | ((*from++ & 0b0'0011'1111) << 0);
         *to++ = char16_t(c);
     }
-    else {                         // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
+    else {                          // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
         c = (c & 0b0'0000'0111) << 18;
         c = c | ((*from++ & 0b0'0011'1111) << 12);
         c = c | ((*from++ & 0b0'0011'1111) << 6);
