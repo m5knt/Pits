@@ -28,24 +28,24 @@ namespace String {
 enum EncodingTypes {
 
     // マルチバイト系
-    UTF8,       ///< UTF8  1 ～ 4 Bytes
-    SJIS,       ///< SJIS  1 ～ 2 Bytes (AKA CP932, MS932, Windows31J)
+    UTF8,       // 1 ～ 4 Bytes
+    SJIS,       // 1 ～ 2 Bytes (AKA CP932, MS932, Windows31J)
     // EUCJP,
 
     // ワイド系
-    UTF16,      ///< UTF16 (Native)
-    UTF32,      ///< UTF32 (Native)
+    UTF16,      // Native
+    UTF32,      // Native
 
     // その他
-    UNKNOWN,    ///< 不明
+    UNKNOWN,    //
 };
 
 /**
  * @brief "漢字" のエンコード種別を返す
  * 
  * C/C++言語仕様上 char[] wchar_t[] char16_t[] char32_t[] は
- * 特定のエンコードではない為、決め打ち実装時に厳密に判定出来るよう関数を用意している
- * u8"" の char8_t[] は UTF8 と決まっているので用意しない
+ * 特定のエンコードではない為、厳密に判定出来るよう関数を用意している
+ * u8"" の char8_t[] は UTF8 と決まっているので用意していない
  * 
  * @param kanji "漢字" L"漢字" u"漢字" U"漢字" を渡す
  * @return EncodingType
