@@ -7,6 +7,12 @@
 #include <codecvt>
 
 using namespace std::literals;
+#if __cplusplus <= 201703L
+namespace std {
+    using u8string = basic_string<char8_t>;
+    //using u8string = string;
+}
+#endif
 
 template <class Job>
 void Bench(Job job) {

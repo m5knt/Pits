@@ -7,8 +7,14 @@
 #ifndef PITS_STRING_HPP_
 #define PITS_STRING_HPP_
 
-#include <cstdint>  // uint8_t
 #include <uchar.h>  // __STDC_UTF_16__ __STDC_UTF_32__
+#include <string>
+
+#if __cplusplus <= 201703L
+ /// for C++17 char8_t
+enum char8_t : unsigned char;
+
+#endif
 
 /*
  *

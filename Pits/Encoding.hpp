@@ -7,7 +7,6 @@
 #ifndef PITS_ENCODING_HPP_
 #define PITS_ENCODING_HPP_
 
-#include <cstdint>  // uint8_t
 #include <uchar.h>  // __STDC_UTF_16__ __STDC_UTF_32__
 #include <array>
 #include <utility>  // pair
@@ -20,10 +19,8 @@
  */
 
 #if __cplusplus <= 201703L
-using char8_t = char;
-namespace std {
-    using u8string = std::string;
-}
+ /// for C++17 char8_t
+enum char8_t : unsigned char;
 #endif
 
 /*
