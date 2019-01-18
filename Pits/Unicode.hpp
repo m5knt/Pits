@@ -290,22 +290,23 @@ constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to)
 {
     auto c = char32_t(*from++);
 
+    [[likely]]
     if (c <= 0x7f) {
         *to++ = char8_t(c);
         return {from, to};
     }
-    else if (c <= 0x7ff) {
+    else [[unlikely]] if (c <= 0x7ff) {
         *to++ = char8_t(((c >> 6) & 0b0'0011'1111) | 0b0'1100'0000);
         *to++ = char8_t(((c >> 0) & 0b0'0011'1111) | 0b0'1000'0000);
         return {from, to};
     }
-    else if (c <= 0xffff) {
+    else [[likely]] if (c <= 0xffff) {
         *to++ = char8_t(((c >> 12) & 0b0'0001'1111) | 0b0'1110'0000);
         *to++ = char8_t(((c >> 6) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 0) & 0b0'0011'1111) | 0b0'1000'0000);
         return {from, to};
     }
-    else {
+    else [[unlikely]] {
         *to++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
         *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 6) & 0b0'0011'1111) | 0b0'1000'0000);
@@ -329,11 +330,14 @@ constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to)
     -> std::pair<UTF32Iterator, UTF16Iterator>
 {
     auto c = char32_t(*from++);
+
+    [[likely]]
     if (c < 0x10000) {
         *to++ = char16_t(c);
         return {from, to};
     }
-    else {
+    else [[unlikely]] {
+        // サロゲート
         *to++ = char16_t(((c - 0x10000) / 0x400) + 0xd800);
         *to++ = char16_t(((c - 0x10000) % 0x400) + 0xdc00);
         return {from, to};
@@ -356,29 +360,27 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to)
 {
     auto c = char32_t(char8_t(*from++));
 
+    [[likely]]
     /**/ if (c < 0b0'1000'0000) {   //  0 ～ 7f 0 ～ 7f 7
         *to++ = c;
         return {from, to};
     }
-    else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6
-        c = (c & 0b0'0001'1111) << 6 |
+    else [[unlikely]] if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6
+        *to++ = (c & 0b0'0001'1111) << 6 |
             (*from++ & 0b0'0011'1111);
-        *to++ = c;
         return {from, to};
     }
-    else if (c < 0b0'1111'0000) {   // e0 ～ ef 800 ～ ffff　4+6+6 
-        c = (c & 0b0'0000'1111) << 12 |
+    else [[likely]] if (c < 0b0'1111'0000) {   // e0 ～ ef 800 ～ ffff　4+6+6 
+        *to++ = (c & 0b0'0000'1111) << 12 |
             (*from++ & 0b0'0011'1111) << 6 |
             (*from++ & 0b0'0011'1111) << 0;
-        *to++ = c;
         return {from, to};
     }
-    else {                          // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
-        c = (c & 0b0'0000'0111) << 18 |
+    else [[unlikely]] {                          // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
+        *to++ = (c & 0b0'0000'0111) << 18 |
             (*from++ & 0b0'0011'1111) << 12 |
             (*from++ & 0b0'0011'1111) << 6 |
             (*from++ & 0b0'0011'1111) << 0;
-        *to++ = c;
         return {from, to};
     }
 }
@@ -397,16 +399,15 @@ constexpr auto ConvertUTF16ToUTF32(UTF16Iterator from, UTF32Iterator to)
     noexcept(noexcept(*to++ = char32_t(*from++)))
     -> std::pair<UTF16Iterator, UTF32Iterator>
 {
-    // UTF32化
     auto c = char32_t(*from++);
 
-    // サロゲート確認
+    [[unlikely]]
     if (0xd800 <= c && c <= 0xdbff) {
-        c = ((c - 0xd800) * 0x400) + (*from++ & 0x3ff) + 0x10000;
-        *to++ = c;
+        // サロゲート
+        *to++ = ((c - 0xd800) * 0x400) + (*from++ & 0x3ff) + 0x10000;
         return {from, to};
     }
-    else {
+    else [[likely]] {
         *to++ = c;
         return {from, to};
     }
@@ -428,16 +429,18 @@ constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to)
 {
     auto c = char32_t(*from++);
 
+    [[likely]]
     /**/ if (c <= 0x7f) {
         *to++ = char8_t(c);
         return {from, to};
     }
-    else if (c <= 0x7ff) {
+    else [[unlikely]] if (c <= 0x7ff) {
         *to++ = char8_t(((c >> 6) & 0b0'0011'1111) | 0b0'1100'0000);
         *to++ = char8_t(((c >> 0) & 0b0'0011'1111) | 0b0'1000'0000);
         return {from, to};
     }
-    else if (0xd800 <= c && c <= 0xdbff) {
+    else [[unlikely]] if (0xd800 <= c && c <= 0xdbff) {
+        // サロゲート
         c = ((c - 0xd800) * 0x400) + (*from++ & 0x3ff) + 0x10000;
         *to++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
         *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
@@ -445,7 +448,7 @@ constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to)
         *to++ = char8_t(((c >> 0) & 0b0'0011'1111) | 0b0'1000'0000);
         return {from, to};
     }
-    else { // 0x800 ～ 0xd7ff, 0xe000 ～ 0xffff
+    else [[likely]] { // 0x800 ～ 0xd7ff, 0xe000 ～ 0xffff
         *to++ = char8_t(((c >> 12) & 0b0'0001'1111) | 0b0'1110'0000);
         *to++ = char8_t(((c >> 6) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 0) & 0b0'0011'1111) | 0b0'1000'0000);
@@ -469,24 +472,26 @@ constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to)
 {
     auto c = char32_t(char8_t(*from++));
 
+    [[likely]]
     /**/ if (c < 0b0'1000'0000) {   //  0 ～ 7f 0 ～ 7f 7
         *to++ = char16_t(c);
         return {from, to};
     }
-    else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6 
+    else [[unlikely]] if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6 
         c = (c & 0b0'0001'1111) << 6 |
             (*from++ & 0b0'0011'1111);
         *to++ = char16_t(c);
         return {from, to};
     }
-    else if (c < 0b0'1111'0000) {   // e0 ～ ef 800 ～ ffff　4+6+6 
+    else [[likely]] if (c < 0b0'1111'0000) {   // e0 ～ ef 800 ～ ffff　4+6+6 
         c = (c & 0b0'0000'1111) << 12 |
             (*from++ & 0b0'0011'1111) << 6 |
             (*from++ & 0b0'0011'1111) << 0;
         *to++ = char16_t(c);
         return {from, to};
     }
-    else {                          // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6
+    else [[unlikely]] {                          // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6
+        // サロゲート
         c = (c & 0b0'0000'0111) << 18 |
             (*from++ & 0b0'0011'1111) << 12 |
             (*from++ & 0b0'0011'1111) << 6 |
