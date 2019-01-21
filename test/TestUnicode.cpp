@@ -23,7 +23,7 @@ true;
 false;
 #endif
 
-constexpr auto BenchTimes = (DefinedNDEBUG ? 100 : 1);
+constexpr auto BenchTimes = (DefinedNDEBUG ? 1000 : 1);
 
 int main() {
 

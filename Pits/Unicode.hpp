@@ -415,20 +415,20 @@ constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to)
     }
     else if (c <= 0x7ff) {
         // Unicode: 0x00'0080 ～ 0x00'07ff => UTF8: 0xc0 ～ 0xdf, Bits: 5+6
-        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1100'0000);
+        *to++ = char8_t(((c >> 06) & 0b0'0001'1111) | 0b0'1100'0000);
         *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
         return {from, to};
     }
     else [[likely]] if (c <= 0xffff) {
         // Unicode: 0x00'0800 ～ 0x00'ffff => UTF8: 0xe0 ～ 0xef, Bits: 4+6+6
-        *to++ = char8_t(((c >> 12) & 0b0'0001'1111) | 0b0'1110'0000);
+        *to++ = char8_t(((c >> 12) & 0b0'0000'1111) | 0b0'1110'0000);
         *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
         return {from, to};
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff => UTF8: 0xf0 ～ 0xf7, Bits: 3+6+6+6 
-        *to++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
+        *to++ = char8_t(((c >> 18) & 0b0'0000'0111) | 0b0'1111'0000);
         *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
@@ -460,8 +460,9 @@ constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to)
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff, Bits: 10+10+(1)
-        *to++ = char16_t(((c - 0x1'0000) / 0x400) + 0xd800);
-        *to++ = char16_t(((c - 0x1'0000) % 0x400) + 0xdc00);
+        c = c - 0x01'0000;
+        *to++ = char16_t(c / 0x400 + 0xd800);
+        *to++ = char16_t(c % 0x400 + 0xdc00);
         return {from, to};
     }
 }
@@ -559,26 +560,26 @@ constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to)
     [[likely]]
     if (c <= 0x7f) {
         // Unicode: 0x00'0000 ～ 0x00'007f => UTF8: 0x00 ～ 0x7f, Bits: 7
-        *to++ = char8_t(c);
+        *to++ = char8_t(c); // Bits: 7
         return {from, to};
     }
     else if (c <= 0x7ff) {
         // Unicode: 0x00'0080 ～ 0x00'07ff => UTF8: 0xc0 ～ 0xdf, Bits: 5+6
-        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1100'0000);
-        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
+        *to++ = char8_t(((c >> 06) /* & 0b11111 */) | 0b0'1100'0000); // Bits: 5
+        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
     else [[likely]] if (!IsHighSurrogate(c)) {
         // Unicode: 0x00'0800 ～ 0x00'ffff => UTF8: 0xe0 ～ 0xef, Bits: 4+6+6
-        *to++ = char8_t(((c >> 12) & 0b0'0001'1111) | 0b0'1110'0000);
-        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
-        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
+        *to++ = char8_t(((c >> 12) /* & 0b01111 */) | 0b0'1110'0000); // Bits: 4
+        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff => UTF8: 0xf0 ～ 0xf7, Bits: 3+6+6+6
-        c = ((c - 0xd800) * 0x400) + (*from++ & 0x3ff) + 0x10000;
-        *to++ = char8_t(((c >> 18) & 0b0'0000'1111) | 0b0'1111'0000);
+        c = ((c - 0xd800) * 0x400) + (*from++ & 0x3ff) +  0x10000;
+        *to++ = char8_t(((c >> 18) /* & 0b00111 */) | 0b0'1111'0000);
         *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
         *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
@@ -629,8 +630,8 @@ constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to)
             (*from++ & 0b0'0011'1111) << 12 |
             (*from++ & 0b0'0011'1111) << 06 |
             (*from++ & 0b0'0011'1111) << 00;
-        *to++ = char16_t(((c - 0x1'0000) / 0x400) + 0xd800);
-        *to++ = char16_t(((c - 0x1'0000) % 0x400) + 0xdc00);
+        *to++ = char16_t((c / 0x400) + 0xd800); // Bits: 10
+        *to++ = char16_t((c % 0x400) + 0xdc00); // Bits: 10
         return {from, to};
     }
 };
