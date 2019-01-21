@@ -362,9 +362,9 @@ constexpr auto UTF16UnitsToUTF32Units(std::size_t from = 2) -> std::size_t
  * 
  * Name  |  Ranges | UTF16 |  UTF8 | Ratio | Remarks
  * ------+---------+-------+-------+-------+---------
- * UTF16 |      7f |  1(2) | *1(1) | *1/1  |
+ * UTF16 |      7f |  1(2) |  1(1) |  1/1  |
  * UTF16 |     7ff |  1(2) |  2(2) |  2/1  |
- * UTF16 |  0'ffff |  1(2) |  3(3) |  3/1  |
+ * UTF16 |  0'ffff |  1(2) | *3(3) | *3/1  |
  * UTF16 | 1f'ffff |  2(4) |  4(4) |  4/2  |
  * 
  */
