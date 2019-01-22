@@ -44,19 +44,17 @@ namespace Unicode {
  * U""  char32_t 32ビットの符号無し整数
  *      C++11 __STDC_UTF_32__ マクロ定義時に UTF32保証 VS2017 は既定
  * 
- * ユニコード文字は 10ffff まで
- * 
  * Name  |    Ranges | Size | Remarks
  * ------+-----------+------+--------------------------
- * UTF32 |   1f'ffff | 1(4) | 
+ * UTF32 |   10'ffff | 1(4) | 
  * ------+-----------+------+--------------------------
- * UTF16 |    0'ffff | 1(2) | 
- * UTF16 |   1f'ffff | 2(4) | 
+ * UTF16 |    0'ffff | 1(2) | d800 ～ dfff Surrogate
+ * UTF16 |   10'ffff | 2(4) |
  * ------+-----------+------+--------------------------
  * UTF8  |        7f | 1(1) |           7 =  7 
  * UTF8  |       7ff | 2(2) |         5+6 = 11
  * UTF8  |    0'ffff | 3(3) |       4+6+6 = 16
- * UTF8  |   1f'ffff | 4(4) |     3+6+6+6 = 21
+ * UTF8  |   10'ffff | 4(4) |     3+6+6+6 = 21
  * ------+-----------+------+--------------------------
  * UTF8  |  3ff'ffff | 5(5) |   2+6+6+6+6 = 26 仕様削除
  * UTF8  | 7fff'ffff | 6(6) | 1+6+6+6+6+6 = 31 仕様削除
@@ -74,12 +72,13 @@ namespace Unicode {
  * --------+----------------+----------
  * 
  * 参考
+ * - Official Doc   ... https://www.unicode.org/versions/
+ * - Encoding       ... https://www.unicode.org/versions/Unicode11.0.0/ch03.pdf#G7404
+ * 
  * - Unicode        ... https://ja.wikipedia.org/wiki/Unicode
  * - Blocks         ... https://ja.wikipedia.org/wiki/ブロック_(Unicode)
  * - Special Block  ... https://en.wikipedia.org/wiki/Specials_(Unicode_block)
  * - BOM            ... https://ja.wikipedia.org/wiki/バイトオーダーマーク
- * - Official       ... https://www.unicode.org/versions/
- * - Encoding       ... https://www.unicode.org/versions/Unicode11.0.0/ch03.pdf#G7404
  * ― Code Point     ... https://ja.wikipedia.org/wiki/符号点
  * 
  */
@@ -113,7 +112,7 @@ constexpr auto CharacterMax = char32_t(0x10ffff);
  */
 constexpr auto IsSurrogate(char32_t cp) noexcept -> bool
 {
-    return (char32_t(0xd800) <= cp) && (cp <= char32_t(0xdfff));
+    return 0xd800 <= cp && cp <= 0xdfff;
 }
 
 /**
@@ -123,7 +122,7 @@ constexpr auto IsSurrogate(char32_t cp) noexcept -> bool
  */
 constexpr auto IsHighSurrogate(char32_t cp) noexcept -> bool
 {
-    return (char32_t(0xd800) <= cp) && (cp <= char32_t(0xdbff));
+    return 0xd800 <= cp && cp <= 0xdbff;
 }
 
 /**
@@ -133,7 +132,7 @@ constexpr auto IsHighSurrogate(char32_t cp) noexcept -> bool
  */
 constexpr auto IsLowSurrogate(char32_t cp) noexcept -> bool
 {
-    return (char32_t(0xdc00) <= cp) && (cp <= char32_t(0xdfff));
+    return 0xdc00 <= cp && cp <= 0xdfff;
 }
 
 /**
@@ -143,7 +142,7 @@ constexpr auto IsLowSurrogate(char32_t cp) noexcept -> bool
  */
 constexpr auto IsNotCharacter(char32_t cp) noexcept -> bool
 {
-    return (cp & char32_t(0xfffe)) == char32_t(0xfffe);
+    return (cp & 0xfffe) == 0xfffe;
 }
 
 /**
@@ -393,7 +392,7 @@ constexpr auto UTF8UnitsToUTF16Units(std::size_t from = 4) -> std::size_t
 
 /**
  * @brief UTF32 を UTF8 へ1文字変換する
- * @param from UTF32 コード 正しいエンコーディングである事 (1 動く)
+ * @param from UTF32 入力イテレータ (1 動く)
  * @param to UTF8 出力イテレーター (1 ～ 4 動く)
  * @return 移動後の from と to
  */
@@ -407,7 +406,6 @@ constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to)
 {
     auto c = char32_t(*from++);
 
-    [[likely]]
     if (c <= 0x7f) {
         // Unicode: 0x00'0000 ～ 0x00'007f => UTF8: 0x00 ～ 0x7f, Bits: 7
         *to++ = char8_t(c);
@@ -415,30 +413,31 @@ constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to)
     }
     else if (c <= 0x7ff) {
         // Unicode: 0x00'0080 ～ 0x00'07ff => UTF8: 0xc0 ～ 0xdf, Bits: 5+6
-        *to++ = char8_t((c >> 06) & 0b0'0001'1111 | 0b0'1100'0000); // Bits: 5
-        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 06) & 0b0'0001'1111) | 0b0'1100'0000); // Bits: 5
+        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
-    else [[likely]] if (c <= 0xffff) {
+    else if (c <= 0xffff) {
         // Unicode: 0x00'0800 ～ 0x00'ffff => UTF8: 0xe0 ～ 0xef, Bits: 4+6+6
-        *to++ = char8_t((c >> 12) & 0b0'0000'1111 | 0b0'1110'0000); // Bits: 4
-        *to++ = char8_t((c >> 06) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
-        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 12) & 0b0'0000'1111) | 0b0'1110'0000); // Bits: 4
+        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
     else {
+        // 範囲外はここで丸められる
         // Unicode: 0x01'0000 ～ 0x1f'ffff => UTF8: 0xf0 ～ 0xf7, Bits: 3+6+6+6 
-        *to++ = char8_t((c >> 18) & 0b0'0000'0111 | 0b0'1111'0000); // Bits: 3
-        *to++ = char8_t((c >> 12) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
-        *to++ = char8_t((c >> 06) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
-        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 18) & 0b0'0000'0111) | 0b0'1111'0000); // Bits: 3
+        *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
 }
 
 /**
  * @brief UTF32 を UTF16 へ1文字変換する
- * @param from UTF32 入力イテレータ 正しいエンコーディングである事 (1 動く)
+ * @param from UTF32 入力イテレータ (1 動く)
  * @param to UTF16 出力イテレータ (1 ～ 2 動く)
  * @return 移動後の from と to
  */
@@ -452,16 +451,15 @@ constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to)
 {
     auto c = char32_t(*from++);
 
-    [[likely]]
-    if ((c -= (0x10000)) >= 0) {
+    if (c <= 0xffff) {
         // Unicode: 0x00'0000 ～ 0x00'ffff, Bits: 16
         *to++ = char16_t(c);
         return {from, to};
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff, Bits: 10+10+(1)
-        *to++ = char16_t(c / 0x400 + 0xd800);   // Bits: 10
-        *to++ = char16_t(c % 0x400 + 0xdc00);   // Bits: 10
+        *to++ = char16_t(c / 0x400 - (0x40) + 0xd800);  // Bits: 10
+        *to++ = char16_t(c % 0x400 + 0xdc00);           // Bits: 10
         return {from, to};
     }
 }
@@ -482,7 +480,6 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to)
 {
     auto c = char32_t(char8_t(*from++));
 
-    [[likely]]
     if (c <= 0b0'0111'1111) {
         // UTF8: 0x00 ～ 0x7f, Bits: 7 => Unicode: 0x00'0000 ～ 0x00'007f
         *to++ = c;
@@ -494,7 +491,7 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to)
           (*from++ & 0b0'0011'1111);
         return {from, to};
     }
-    else [[likely]] if (c <= 0b0'1110'1111) {
+    else if (c <= 0b0'1110'1111) {
         // UTF8: 0xe0 ～ 0xef, Bits: 4+6+6 => Unicode: 0x00'0800 ～ 0x00'ffff
         *to++ = (c & 0b0'0000'1111) << 12 |
           (*from++ & 0b0'0011'1111) << 06 |
@@ -525,17 +522,17 @@ constexpr auto ConvertUTF16ToUTF32(UTF16Iterator from, UTF32Iterator to)
     noexcept(noexcept(*to++ = char32_t(*from++)))
     -> std::pair<UTF16Iterator, UTF32Iterator>
 {
-    auto c = char32_t(*from++);
+    auto c = char32_t(char16_t(*from++));
+    auto h = c - 0xd800;
 
-    [[likely]]
-    if (!IsHighSurrogate(c)) {
+    if (!(h <= 0x3ff)) {
         // Unicode: 0x00'0000 ～ 0x00'ffff, Bits: 16
         *to++ = c;
         return {from, to};
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff, Bits: 10+10+(1)
-        *to++ = ((c - 0xd800 + (0x40)) * 0x400) + (*from++ - 0xdc00);
+        *to++ = ((h + (0x40)) * 0x400) + (*from++ - 0xdc00);
         return {from, to};
     }
 }
@@ -554,9 +551,8 @@ constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to)
     noexcept(noexcept(*to++ = char8_t(*from++)))
     -> std::pair<UTF16Iterator, UTF8Iterator>
 {
-    auto c = char32_t(*from++);
+    auto c = char32_t(char16_t(*from++));
 
-    [[likely]]
     if (c <= 0x7f) {
         // Unicode: 0x00'0000 ～ 0x00'007f => UTF8: 0x00 ～ 0x7f, Bits: 7
         *to++ = char8_t(c); // Bits: 7
@@ -564,24 +560,26 @@ constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to)
     }
     else if (c <= 0x7ff) {
         // Unicode: 0x00'0080 ～ 0x00'07ff => UTF8: 0xc0 ～ 0xdf, Bits: 5+6
-        *to++ = char8_t((c >> 06) /* & 0b11111 */ | 0b0'1100'0000); // Bits: 5
-        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 06) /* & 0b11111 */) | 0b0'1100'0000); // Bits: 5
+        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
-    else [[likely]] if (!IsHighSurrogate(c)) {
+
+    auto h = c - 0xd800;
+    if (!(h <= 0x3ff)) {
         // Unicode: 0x00'0800 ～ 0x00'ffff => UTF8: 0xe0 ～ 0xef, Bits: 4+6+6
-        *to++ = char8_t((c >> 12) /* & 0b01111 */ | 0b0'1110'0000); // Bits: 4
-        *to++ = char8_t((c >> 06) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
-        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 12) /* & 0b01111 */) | 0b0'1110'0000); // Bits: 4
+        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff => UTF8: 0xf0 ～ 0xf7, Bits: 3+6+6+6
-        c = (c - 0xd800 + 0x40) * 0x400 + (*from++ - 0xdc00);
-        *to++ = char8_t((c >> 18) /* & 0b00111 */ | 0b0'1111'0000); // Bits: 3
-        *to++ = char8_t((c >> 12) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
-        *to++ = char8_t((c >> 06) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
-        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        c = ((h + (0x40)) * 0x400) + (*from++ - 0xdc00);
+        *to++ = char8_t(((c >> 18) /* & 0b00111 */) | 0b0'1111'0000); // Bits: 3
+        *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
 }
@@ -602,7 +600,6 @@ constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to)
 {
     auto c = char32_t(char8_t(*from++));
 
-    [[likely]]
     if (c <= 0b0'0111'1111) {
         // UTF8: 0x00 ～ 0x7f, Bits: 7, Unicode: 0x00'0000 ～ 0x00'007f
         *to++ = char16_t(c);
@@ -615,7 +612,7 @@ constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to)
         *to++ = char16_t(c);
         return {from, to};
     }
-    else [[likely]] if (c <= 0b0'1110'1111) {
+    else if (c <= 0b0'1110'1111) {
         // UTF8: 0xe0 ～ 0xef, Bits: 4+6+6, Unicode: 0x00'0800 ～ 0x00'ffff
         /***/ c = (c & 0b0'0000'1111) << 12 |
             (*from++ & 0b0'0011'1111) << 06 |

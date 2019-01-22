@@ -9,8 +9,7 @@
 using namespace std::literals;
 #if __cplusplus <= 201703L
 namespace std {
-    using u8string = basic_string<char8_t>;
-    //using u8string = string;
+    using u8string = basic_string<char>;
 }
 #endif
 
@@ -144,8 +143,8 @@ int main() {
         std::u32string u32;
         Pits::EncodingUTF8ToUTF16(sv.begin(), sv.end(), std::inserter(u16, u16.end()));
         Pits::EncodingUTF8ToUTF32(sv.begin(), sv.end(), std::inserter(u32, u32.end()));
-        assert(u16.size() <= Pits::Unicode::ReserveUTF8ToUTF16(sv.size()));
-        assert(u32.size() <= Pits::Unicode::ReserveUTF8ToUTF32(sv.size()));
+        assert(u16.size() <= Pits::Unicode::UTF8UnitsToUTF16Units(sv.size()));
+        assert(u32.size() <= Pits::Unicode::UTF8UnitsToUTF32Units(sv.size()));
     }
     {
         auto sv = "\xE0\x80\xBF"sv;
@@ -154,8 +153,8 @@ int main() {
         std::u32string u32;
         Pits::EncodingUTF8ToUTF16(sv.begin(), sv.end(), std::inserter(u16, u16.end()));
         Pits::EncodingUTF8ToUTF32(sv.begin(), sv.end(), std::inserter(u32, u32.end()));
-        assert(u16.size() <= Pits::Unicode::ReserveUTF8ToUTF16(sv.size()));
-        assert(u32.size() <= Pits::Unicode::ReserveUTF8ToUTF32(sv.size()));
+        assert(u16.size() <= Pits::Unicode::UTF8UnitsToUTF16Units(sv.size()));
+        assert(u32.size() <= Pits::Unicode::UTF8UnitsToUTF32Units(sv.size()));
     }
     {
         auto sv = "\xf0\x81\x82\x83"sv;
@@ -164,8 +163,8 @@ int main() {
         std::u32string u32;
         Pits::EncodingUTF8ToUTF16(sv.begin(), sv.end(), std::inserter(u16, u16.end()));
         Pits::EncodingUTF8ToUTF32(sv.begin(), sv.end(), std::inserter(u32, u32.end()));
-        assert(u16.size() <= Pits::Unicode::ReserveUTF8ToUTF16(sv.size()));
-        assert(u32.size() <= Pits::Unicode::ReserveUTF8ToUTF32(sv.size()));
+        assert(u16.size() <= Pits::Unicode::UTF8UnitsToUTF16Units(sv.size()));
+        assert(u32.size() <= Pits::Unicode::UTF8UnitsToUTF32Units(sv.size()));
     }
 
 #endif

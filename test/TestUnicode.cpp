@@ -10,6 +10,12 @@
 
 using namespace std::literals;
 
+#if __cplusplus <= 201703L
+namespace std {
+    using u8string = basic_string<char>;
+}
+#endif
+
 template <class Job>
 void Bench(Job job) {
     Pits::Timer begin;
@@ -56,7 +62,9 @@ int main() {
     static_assert(Pits::Unicode::LeadToUnits(char16_t(0xd800)) == 2);
     static_assert(Pits::Unicode::LeadToUnits(char32_t(0x0000)) == 1);
 
+    std::cout << "Bench Unicode Convert (0 ～ 10ffff) x " << BenchTimes << std::endl;
     {
+#if 0
         auto from = U"𐐷漢字😀";
         char8_t to[100] = {};
         auto f = from;
@@ -66,28 +74,33 @@ int main() {
         std::tie(f, t) = Pits::Unicode::ConvertUTF32ToUTF8(f, t);
         std::tie(f, t) = Pits::Unicode::ConvertUTF32ToUTF8(f, t);
         assert(to == u8"𐐷漢字😀"sv);
+#endif
 
-        std::cout << "Bench Unicode Convert (0 ～ 10ffff) x " << BenchTimes << std::endl;
+        std::vector<char8_t[Pits::Unicode::UTF32UnitsToUTF8Units()]> utf8(Pits::Unicode::CharacterMax + 1);
+        std::vector<char32_t[Pits::Unicode::UTF8UnitsToUTF32Units()]> utf32(Pits::Unicode::CharacterMax + 1);
 
-        std::vector<char8_t[Pits::Unicode::UTF32UnitsToUTF8Units()]> utf8(Pits::Unicode::CharacterMax);
-        std::vector<char32_t[Pits::Unicode::UTF8UnitsToUTF32Units()]> utf32(Pits::Unicode::CharacterMax);
         std::cout << "ConvertUTF32ToUTF8: ";
         Bench([&] {
             for (int j = 0; j < BenchTimes; ++j) {
-                for (int c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                for (char32_t c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                    if (Pits::Unicode::IsSurrogate(c)) continue;
                     Pits::Unicode::ConvertUTF32ToUTF8(&c, &utf8[c][0]);
                 }
             }
         });
+
         std::cout << "ConvertUTF8ToUTF32: ";
         Bench([&] {
             for (int j = 0; j < BenchTimes; ++j) {
-                for (int c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                for (char32_t c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                    if (Pits::Unicode::IsSurrogate(c)) continue;
                     Pits::Unicode::ConvertUTF8ToUTF32(&utf8[c][0], &utf32[c][0]);
                 }
             }
         });
-        for (int c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+
+        for (char32_t c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+            if (Pits::Unicode::IsSurrogate(c)) continue;
             assert(utf32[c][0] == c);
         }
     }
@@ -101,52 +114,64 @@ int main() {
         std::tie(f, t) = Pits::Unicode::ConvertUTF32ToUTF16(f, t);
         std::tie(f, t) = Pits::Unicode::ConvertUTF32ToUTF16(f, t);
         assert(to == u"𐐷漢字😀"sv);
-        std::vector<char16_t[Pits::Unicode::UTF32UnitsToUTF16Units()]> utf16(Pits::Unicode::CharacterMax);
-        std::vector<char8_t[Pits::Unicode::UTF16UnitsToUTF8Units()]> utf8(Pits::Unicode::CharacterMax);
-        std::vector<char32_t[Pits::Unicode::UTF16UnitsToUTF32Units()]> utf32(Pits::Unicode::CharacterMax);
+
+        std::vector<char16_t[Pits::Unicode::UTF32UnitsToUTF16Units()]> utf16(Pits::Unicode::CharacterMax + 1);
+        std::vector<char8_t[Pits::Unicode::UTF16UnitsToUTF8Units()]> utf8(Pits::Unicode::CharacterMax + 1);
+        std::vector<char32_t[Pits::Unicode::UTF16UnitsToUTF32Units()]> utf32(Pits::Unicode::CharacterMax + 1);
+
         std::cout << "ConvertUTF32ToUTF16: ";
         Bench([&] {
             for (int j = 0; j < BenchTimes; ++j) {
-                for (int c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                for (char32_t c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                    if (Pits::Unicode::IsSurrogate(c)) continue;
                     Pits::Unicode::ConvertUTF32ToUTF16(&c, &utf16[c][0]);
                 }
             }
         });
+
         std::cout << "ConvertUTF16ToUTF32: ";
         Bench([&] {
             for (int j = 0; j < BenchTimes; ++j) {
-                for (int c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                for (char32_t c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                    if (Pits::Unicode::IsSurrogate(c)) continue;
                     Pits::Unicode::ConvertUTF16ToUTF32(&utf16[c][0], &utf32[c][0]);
                 }
             }
         });
-        for (int c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+
+        for (char32_t c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+            if (Pits::Unicode::IsSurrogate(c)) continue;
             assert(utf32[c][0] == c);
         }
 
         std::cout << "ConvertUTF16ToUTF8: ";
         Bench([&] {
             for (int j = 0; j < BenchTimes; ++j) {
-                for (int c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                for (char32_t c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                    if (Pits::Unicode::IsSurrogate(c)) continue;
                     Pits::Unicode::ConvertUTF16ToUTF8(&utf16[c][0], &utf8[c][0]);
                 }
             }
         });
+
         std::cout << "ConvertUTF8ToUTF16: ";
-        char16_t tmp[Pits::Unicode::UTF8UnitsToUTF16Units()]{};
         Bench([&] {
             for (int j = 0; j < BenchTimes; ++j) {
-                for (int c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                for (char32_t c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+                    if (Pits::Unicode::IsSurrogate(c)) continue;
                     Pits::Unicode::ConvertUTF8ToUTF16(&utf8[c][0], &utf16[c][0]);
                 }
             }
         });
-        for (int c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+
+        for (char32_t c = 0; c < Pits::Unicode::CharacterMax; ++c) {
+            if (Pits::Unicode::IsSurrogate(c)) continue;
             auto cc = char32_t{};
             Pits::Unicode::ConvertUTF16ToUTF32(&utf16[c][0], &cc);
             assert(cc == c);
         }
     }
+#if 0
     {
         auto from = u8"𐐷漢字😀";
         char32_t to[100] = {};
@@ -191,6 +216,7 @@ int main() {
         std::tie(f, t) = Pits::Unicode::ConvertUTF16ToUTF8(f, t);
         assert(to == u8"𐐷漢字😀"sv);
     }
+#endif
 
 #endif
 
