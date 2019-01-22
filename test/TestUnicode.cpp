@@ -1,6 +1,7 @@
-﻿#include "Pits/Encoding.hpp"
+﻿#include "Pits/Unicode.hpp"
 #include "Pits/Timer.hpp"
 
+#include <uchar.h>
 #include <cassert>
 #include <string_view>
 #include <iostream>

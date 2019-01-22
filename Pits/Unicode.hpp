@@ -65,7 +65,7 @@ namespace Unicode {
  * 
  * Name    | Bytes          | Remarks
  * --------+----------------+----------
- * UTF8    | ef, bb, bf     | fe ff
+ * UTF8    | ef, bb, bf     | u+feff
  * UTF16BE | fe, ff         |
  * UTF16LE | ff, fe         |
  * --------+----------------+----------
@@ -173,7 +173,7 @@ constexpr auto IsSafeCharacter(char32_t cp) -> bool
 /// UTF8 後続データであるか返す
 constexpr auto IsFollowUnit(char8_t unit) noexcept -> bool
 {
-    return (unit & char8_t(0xc0)) == char8_t(0x80);
+    return (unit & 0xc0) == 0x80;
 }
 
 /// UTF8 先頭データであるか返す
@@ -185,7 +185,7 @@ constexpr auto IsLeadUnit(char8_t unit) noexcept -> bool
 /// UTF16 後続データであるか返す
 constexpr auto IsFollowUnit(char16_t unit) noexcept -> bool
 {
-    return (unit & char16_t(0xfc00)) == char16_t(0xdc00);
+    return (unit & 0xfc00) == 0xdc00;
 }
 
 /// UTF16 先頭データであるか返す
@@ -207,17 +207,17 @@ constexpr auto IsLeadUnit(char32_t unit) noexcept -> bool
 }
 
 /**
- * @brief コードポイント数を返す
+ * @brief 指定範囲のコードポイント数を返す
  * @param begin 開始位置
  * @param end 終了位置 
  * @return コードポイント数
  */
-template <class Iterator,
-    class = typename std::iterator_traits<Iterator>::value_type
+template <class UTFXXIterator,
+    class = typename std::iterator_traits<UTFXXIterator>::value_type
 >
-auto Points(Iterator begin, Iterator end) noexcept -> std::size_t
+auto Points(UTFXXIterator begin, UTFXXIterator end) noexcept -> std::size_t
 {
-    auto count = std::size_t{};
+    auto count = std::size_t {};
     for (auto it = begin; it != end; ++it) {
         if (IsFollowUnit(*it)) continue;
         ++count;
@@ -232,18 +232,18 @@ auto Points(Iterator begin, Iterator end) noexcept -> std::size_t
  */
 constexpr auto LeadToUnits(char8_t lead) noexcept -> int
 {
-    auto u = lead;
+    auto c = lead;
 
     [[likely]]
-    if (u < char8_t(0b0'1000'0000)) {
+    if (c <= 0b0'0111'1111) {
         // UTF8: 0x00 ～ 0x7f, Bits: 7 => Unicode: 0x00'0000 ～ 0x00'007f
         return 1;
     }
-    else if (u < char8_t(0b0'1110'0000)) {
+    else if (c <= 0b0'1101'1111) {
         // UTF8: 0xc0 ～ 0xdf, Bits: 5+6 => Unicode: 0x00'0080 ～ 0x00'07ff
         return 2;
     }
-    else [[likely]] if (u < char8_t(0b0'1111'0000)) {
+    else [[likely]] if (c <= 0b0'1110'1111) {
         // UTF8: 0xe0 ～ 0xef, Bits: 4+6+6 => Unicode: 0x00'0800 ～ 0x00'ffff
         return 3;
     }
@@ -260,10 +260,10 @@ constexpr auto LeadToUnits(char8_t lead) noexcept -> int
  */
 constexpr auto LeadToUnits(char16_t lead) noexcept -> int
 {
-    auto u = lead;
+    auto c = lead;
 
     [[likely]]
-    if (!((char16_t(0xd800) <= u) && (u <= char16_t(0xdbff)))) {
+    if (!(0xd800 <= c && c <= 0xdbff)) {
         // Unicode: 0x00'0000 ～ 0x00'ffff, Bits: 16
         return 1;
     }
@@ -415,23 +415,23 @@ constexpr auto ConvertUTF32ToUTF8(UTF32Iterator from, UTF8Iterator to)
     }
     else if (c <= 0x7ff) {
         // Unicode: 0x00'0080 ～ 0x00'07ff => UTF8: 0xc0 ～ 0xdf, Bits: 5+6
-        *to++ = char8_t(((c >> 06) & 0b0'0001'1111) | 0b0'1100'0000);
-        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
+        *to++ = char8_t((c >> 06) & 0b0'0001'1111 | 0b0'1100'0000); // Bits: 5
+        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
     else [[likely]] if (c <= 0xffff) {
         // Unicode: 0x00'0800 ～ 0x00'ffff => UTF8: 0xe0 ～ 0xef, Bits: 4+6+6
-        *to++ = char8_t(((c >> 12) & 0b0'0000'1111) | 0b0'1110'0000);
-        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
-        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
+        *to++ = char8_t((c >> 12) & 0b0'0000'1111 | 0b0'1110'0000); // Bits: 4
+        *to++ = char8_t((c >> 06) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff => UTF8: 0xf0 ～ 0xf7, Bits: 3+6+6+6 
-        *to++ = char8_t(((c >> 18) & 0b0'0000'0111) | 0b0'1111'0000);
-        *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
-        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
-        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
+        *to++ = char8_t((c >> 18) & 0b0'0000'0111 | 0b0'1111'0000); // Bits: 3
+        *to++ = char8_t((c >> 12) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t((c >> 06) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
 }
@@ -453,16 +453,15 @@ constexpr auto ConvertUTF32ToUTF16(UTF32Iterator from, UTF16Iterator to)
     auto c = char32_t(*from++);
 
     [[likely]]
-    if (c < 0x1'0000) {
+    if ((c -= (0x10000)) >= 0) {
         // Unicode: 0x00'0000 ～ 0x00'ffff, Bits: 16
         *to++ = char16_t(c);
         return {from, to};
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff, Bits: 10+10+(1)
-        c = c - 0x01'0000;
-        *to++ = char16_t(c / 0x400 + 0xd800);
-        *to++ = char16_t(c % 0x400 + 0xdc00);
+        *to++ = char16_t(c / 0x400 + 0xd800);   // Bits: 10
+        *to++ = char16_t(c % 0x400 + 0xdc00);   // Bits: 10
         return {from, to};
     }
 }
@@ -484,18 +483,18 @@ constexpr auto ConvertUTF8ToUTF32(UTF8Iterator from, UTF32Iterator to)
     auto c = char32_t(char8_t(*from++));
 
     [[likely]]
-    if (c < 0b0'1000'0000) {
+    if (c <= 0b0'0111'1111) {
         // UTF8: 0x00 ～ 0x7f, Bits: 7 => Unicode: 0x00'0000 ～ 0x00'007f
         *to++ = c;
         return {from, to};
     }
-    else if (c < 0b0'1110'0000) {
+    else if (c <= 0b0'1101'1111) {
         // UTF8: 0xc0 ～ 0xdf, Bits: 5+6 => Unicode: 0x00'0080 ～ 0x00'07ff
         *to++ = (c & 0b0'0001'1111) << 06 |
           (*from++ & 0b0'0011'1111);
         return {from, to};
     }
-    else [[likely]] if (c < 0b0'1111'0000) {
+    else [[likely]] if (c <= 0b0'1110'1111) {
         // UTF8: 0xe0 ～ 0xef, Bits: 4+6+6 => Unicode: 0x00'0800 ～ 0x00'ffff
         *to++ = (c & 0b0'0000'1111) << 12 |
           (*from++ & 0b0'0011'1111) << 06 |
@@ -536,7 +535,7 @@ constexpr auto ConvertUTF16ToUTF32(UTF16Iterator from, UTF32Iterator to)
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff, Bits: 10+10+(1)
-        *to++ = ((c - 0xd800) * 0x400) + (*from++ & 0x3ff) + 0x1'0000;
+        *to++ = ((c - 0xd800 + (0x40)) * 0x400) + (*from++ - 0xdc00);
         return {from, to};
     }
 }
@@ -565,24 +564,24 @@ constexpr auto ConvertUTF16ToUTF8(UTF16Iterator from, UTF8Iterator to)
     }
     else if (c <= 0x7ff) {
         // Unicode: 0x00'0080 ～ 0x00'07ff => UTF8: 0xc0 ～ 0xdf, Bits: 5+6
-        *to++ = char8_t(((c >> 06) /* & 0b11111 */) | 0b0'1100'0000); // Bits: 5
-        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t((c >> 06) /* & 0b11111 */ | 0b0'1100'0000); // Bits: 5
+        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
     else [[likely]] if (!IsHighSurrogate(c)) {
         // Unicode: 0x00'0800 ～ 0x00'ffff => UTF8: 0xe0 ～ 0xef, Bits: 4+6+6
-        *to++ = char8_t(((c >> 12) /* & 0b01111 */) | 0b0'1110'0000); // Bits: 4
-        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
-        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t((c >> 12) /* & 0b01111 */ | 0b0'1110'0000); // Bits: 4
+        *to++ = char8_t((c >> 06) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
     else {
         // Unicode: 0x01'0000 ～ 0x1f'ffff => UTF8: 0xf0 ～ 0xf7, Bits: 3+6+6+6
-        c = ((c - 0xd800) * 0x400) + (*from++ & 0x3ff) +  0x10000;
-        *to++ = char8_t(((c >> 18) /* & 0b00111 */) | 0b0'1111'0000);
-        *to++ = char8_t(((c >> 12) & 0b0'0011'1111) | 0b0'1000'0000);
-        *to++ = char8_t(((c >> 06) & 0b0'0011'1111) | 0b0'1000'0000);
-        *to++ = char8_t(((c >> 00) & 0b0'0011'1111) | 0b0'1000'0000);
+        c = (c - 0xd800 + 0x40) * 0x400 + (*from++ - 0xdc00);
+        *to++ = char8_t((c >> 18) /* & 0b00111 */ | 0b0'1111'0000); // Bits: 3
+        *to++ = char8_t((c >> 12) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t((c >> 06) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
+        *to++ = char8_t((c >> 00) & 0b0'0011'1111 | 0b0'1000'0000); // Bits: 6
         return {from, to};
     }
 }
@@ -604,19 +603,19 @@ constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to)
     auto c = char32_t(char8_t(*from++));
 
     [[likely]]
-    if (c < 0b0'1000'0000) {
+    if (c <= 0b0'0111'1111) {
         // UTF8: 0x00 ～ 0x7f, Bits: 7, Unicode: 0x00'0000 ～ 0x00'007f
         *to++ = char16_t(c);
         return {from, to};
     }
-    else if (c < 0b0'1110'0000) {
+    else if (c <= 0b0'1101'1111) {
         // UTF8: 0xc0 ～ 0xdf, Bits: 5+6, Unicode: 0x00'0080 ～ 0x00'07ff
         /***/ c = (c & 0b0'0001'1111) << 6 |
             (*from++ & 0b0'0011'1111);
         *to++ = char16_t(c);
         return {from, to};
     }
-    else [[likely]] if (c < 0b0'1111'0000) {
+    else [[likely]] if (c <= 0b0'1110'1111) {
         // UTF8: 0xe0 ～ 0xef, Bits: 4+6+6, Unicode: 0x00'0800 ～ 0x00'ffff
         /***/ c = (c & 0b0'0000'1111) << 12 |
             (*from++ & 0b0'0011'1111) << 06 |
@@ -630,8 +629,8 @@ constexpr auto ConvertUTF8ToUTF16(UTF8Iterator from, UTF16Iterator to)
             (*from++ & 0b0'0011'1111) << 12 |
             (*from++ & 0b0'0011'1111) << 06 |
             (*from++ & 0b0'0011'1111) << 00;
-        *to++ = char16_t((c / 0x400) + 0xd800); // Bits: 10
-        *to++ = char16_t((c % 0x400) + 0xdc00); // Bits: 10
+        *to++ = char16_t(c / 0x400 - (0x40) + 0xd800);  // Bits: 10
+        *to++ = char16_t(c % 0x400 + 0xdc00);           // Bits: 10
         return {from, to};
     }
 };
