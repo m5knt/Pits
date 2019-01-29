@@ -150,7 +150,7 @@ constexpr auto IsNotCharacter(char32_t cp) noexcept -> bool
  * @param c 文字
  * @return bool 真偽
  */
-constexpr auto IsUnsafeCharacter(char32_t cp) -> bool
+constexpr auto IsUnsafeCharacter(char32_t cp) noexcept -> bool
 {
     return (CharacterMax < cp) || IsSurrogate(cp) || IsNotCharacter(cp);
 }
@@ -160,7 +160,7 @@ constexpr auto IsUnsafeCharacter(char32_t cp) -> bool
  * @param c 文字
  * @return bool 真偽
  */
-constexpr auto IsSafeCharacter(char32_t cp) -> bool
+constexpr auto IsSafeCharacter(char32_t cp) noexcept -> bool
 {
     return !IsUnsafeCharacter(cp);
 }
@@ -214,7 +214,7 @@ constexpr auto IsLeadUnit(char32_t unit) noexcept -> bool
 template <class UTFXXIterator,
     class = typename std::iterator_traits<UTFXXIterator>::value_type
 >
-auto Points(UTFXXIterator begin, UTFXXIterator end) noexcept -> std::size_t
+constexpr auto Points(UTFXXIterator begin, UTFXXIterator end) noexcept -> std::size_t
 {
     auto count = std::size_t {};
     for (auto it = begin; it != end; ++it) {
@@ -296,7 +296,7 @@ constexpr auto LeadToUnits(char32_t lead) noexcept -> int
  * UTF32 | 1f'ffff |  1(4) | *4(4) | *4/1  |
  * 
  */
-constexpr auto UTF32UnitsToUTF8Units(std::size_t from = 1) -> std::size_t
+constexpr auto UTF32UnitsToUTF8Units(std::size_t from = 1) noexcept -> std::size_t
 {
     return from * 4;
 }
@@ -314,7 +314,7 @@ constexpr auto UTF32UnitsToUTF8Units(std::size_t from = 1) -> std::size_t
  * UTF32 | 1f'ffff |  1(4) | *2(4) | *2/1  |
  * 
  */
-constexpr auto UTF32UnitsToUTF16Units(std::size_t from = 1) -> std::size_t
+constexpr auto UTF32UnitsToUTF16Units(std::size_t from = 1) noexcept -> std::size_t
 {
     return from * 2;
 }
@@ -332,7 +332,7 @@ constexpr auto UTF32UnitsToUTF16Units(std::size_t from = 1) -> std::size_t
  * UTF8  | 1f'ffff |  4(4) |  1(4) |  1/4  |
  * 
  */
-constexpr auto UTF8UnitsToUTF32Units(std::size_t from = 4) -> std::size_t
+constexpr auto UTF8UnitsToUTF32Units(std::size_t from = 4) noexcept -> std::size_t
 {
     return from;
 }
@@ -349,7 +349,7 @@ constexpr auto UTF8UnitsToUTF32Units(std::size_t from = 4) -> std::size_t
  * UTF16 |  0'ffff |  1(2) |  1(4) |  1/1  |
  * UTF16 | 1f'ffff |  2(4) |  1(4) |  1/2  |
  */
-constexpr auto UTF16UnitsToUTF32Units(std::size_t from = 2) -> std::size_t
+constexpr auto UTF16UnitsToUTF32Units(std::size_t from = 2) noexcept -> std::size_t
 {
     return from;
 }
@@ -367,7 +367,7 @@ constexpr auto UTF16UnitsToUTF32Units(std::size_t from = 2) -> std::size_t
  * UTF16 | 1f'ffff |  2(4) |  4(4) |  4/2  |
  * 
  */
-constexpr auto UTF16UnitsToUTF8Units(std::size_t from = 2) -> std::size_t
+constexpr auto UTF16UnitsToUTF8Units(std::size_t from = 2) noexcept -> std::size_t
 {
     return from * 3;
 }
@@ -385,7 +385,7 @@ constexpr auto UTF16UnitsToUTF8Units(std::size_t from = 2) -> std::size_t
  * UTF8  | 1f'ffff |  4(4) |  2(4) |  2/4  |
  * 
  */
-constexpr auto UTF8UnitsToUTF16Units(std::size_t from = 4) -> std::size_t
+constexpr auto UTF8UnitsToUTF16Units(std::size_t from = 4) noexcept -> std::size_t
 {
     return from;
 }

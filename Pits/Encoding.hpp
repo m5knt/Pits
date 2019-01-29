@@ -133,28 +133,24 @@ constexpr auto EncodingUTF8ToUTF32(UTF8Iterator begin, UTF8Iterator end = UTF8It
 
     // シングルコードの確認
     auto c = char32_t(*it++ & 0xff);
-    if (c < 0b0'1000'0000) {        //  0 ～ 7f 0 ～ 7f 7
+    if (c <= 0b0'0111'1111) {        //  0 ～ 7f 0 ～ 7f 7
         return {it, c};
     }
 
     auto min = char32_t {};
     auto req = int {};
 
-    /**/ if (c < 0b0'1100'0000) {   // 80 ～ bf
-        // 読み込みコードポイント毎に置き換え
-        return {it, EncodingErrorIllegalSequence};
-    }
-    else if (c < 0b0'1110'0000) {   // c0 ～ df 80 ～ 7ff 5+6 
+    /**/ if (c <= 0b0'1101'1111) {   // c0 ～ df 80 ～ 7ff 5+6 
         c &= 0b0'0001'1111;
         min = 0x80;
         req = 1;
     }
-    else if (c < 0b0'1111'0000) {   // e0 ～ ef 800 ～ ffff　4+6+6 
+    else if (c <= 0b0'1110'1111) {   // e0 ～ ef 800 ～ ffff　4+6+6 
         c &= 0b0'0000'1111;
         min = 0x800;
         req = 2;
     }
-    else if (c < 0b0'1111'1000) {   // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
+    else if (c <= 0b0'1111'0111) {   // f0 ～ f7 1'0000 ～ 1f'ffff 3+6+6+6 
         c &= 0b0'0000'0111;
         min = 0x10000;
         req = 3;
